@@ -38,8 +38,6 @@ const Transactions: React.FC<{
 
   const [txType, setTxType] = React.useState((router.query.type as string) || 'all');
 
-  const account = accountIdFilter?.[0] ?? 'none';
-
   const ENTRIES_PER_PAGE = accountIdFilter || blockIDFilter ? 10 : totalCount;
   const variables: TransactionsQueryVariables = {
     first: ENTRIES_PER_PAGE,
@@ -226,7 +224,7 @@ const Transactions: React.FC<{
               <th className="p-2 whitespace-nowrap">From</th>
               <th className="p-2 whitespace-nowrap">To</th>
               <th className="p-2 whitespace-nowrap">Amount</th>
-              <th className="p-2 whitespace-nowrap">{account === 'none' ? 'Total Fee' : 'Fee'}</th>
+              <th className="p-2 whitespace-nowrap">Fee</th>
               <th className="p-2 whitespace-nowrap">Verified</th>
             </tr>
           </thead>
@@ -245,7 +243,6 @@ const Transactions: React.FC<{
                     </td>
                     <TransactionTableDetails
                       tx={tx}
-                      account={account}
                       type={tx.__typename}
                       cellClassName="p-2 border-b dark:border-loopring-dark-darkBlue whitespace-nowrap dark:text-white"
                     />

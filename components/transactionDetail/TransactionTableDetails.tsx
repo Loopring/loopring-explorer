@@ -18,7 +18,7 @@ const makeCSVTokenAmount = (amount, token) => {
   return `${getTokenAmount(amount, token.decimals).toFixed(6)} ${token.symbol}`;
 };
 
-export const getCSVTransactionDetailFields = (tx, account) => {
+export const getCSVTransactionDetailFields = (tx) => {
   switch (tx.__typename) {
     case 'Add':
       return [
@@ -128,13 +128,11 @@ export const getCSVTransactionDetailFields = (tx, account) => {
         makeCSVLink(tx.accountSeller),
         makeCSVLink(tx.accountBuyer),
         '',
-        tx.accountSeller.id === account ? 'Seller' : 'Buyer',
         '',
         makeCSVTokenAmount(tx.realizedNFTPrice, tx.token),
         '',
-        tx.accountSeller.id === account
-          ? makeCSVTokenAmount(tx.feeSeller, tx.token)
-          : makeCSVTokenAmount(tx.feeBuyer, tx.token),
+        '',
+        makeCSVTokenAmount(tx.feeBuyer, tx.token),
       ];
     case 'SwapNFT':
       return [makeCSVLink(tx.accountA), makeCSVLink(tx.accountB), '', '', '', '', '', ''];
@@ -161,7 +159,7 @@ export const getCSVTransactionDetailFields = (tx, account) => {
         makeCSVTokenAmount(tx.fee, tx.feeToken),
       ];
     case 'MintNFT':
-      return [makeCSVLink(tx.minter), makeCSVLink(tx.receiver), '', '', '', '', '', makeCSVTokenAmount(tx.fee, tx.feeToken)];
+      return [makeCSVLink(tx.minter), makeCSVLink(tx.receiver), '', '', '', '', '', ''];
     case 'DataNFT':
       return ['', '', '', '', '', '', '', ''];
     default:
@@ -172,9 +170,8 @@ export const getCSVTransactionDetailFields = (tx, account) => {
 const TransactionTableDetails: React.FC<{
   type: string;
   tx: any;
-  account: string;
   cellClassName?: string;
-}> = ({ type, tx, account, cellClassName }) => {
+}> = ({ type, tx, cellClassName }) => {
   switch (type) {
     case 'Add':
       return (
@@ -383,12 +380,7 @@ const TransactionTableDetails: React.FC<{
             {getTokenAmount(tx.realizedNFTPrice, tx.token.decimals)} {tx.token.symbol}
           </td>
           <td className={cellClassName}>
-            {account === 'none'
-              ? `${getTokenAmount(parseInt(tx.feeBuyer) + parseInt(tx.feeSeller), tx.token.decimals)}`
-              : tx.accountSeller.id === account
-                ? `${getTokenAmount(tx.feeSeller, tx.token.decimals)}`
-                : `${getTokenAmount(tx.feeBuyer, tx.token.decimals)}`
-            } {tx.token.symbol}
+            {getTokenAmount(parseInt(tx.feeBuyer) + parseInt(tx.feeSeller), tx.token.decimals)} {tx.token.symbol}
           </td>
         </>
       );
@@ -461,9 +453,7 @@ const TransactionTableDetails: React.FC<{
             </AppLink>
           </td>
           <td className={cellClassName}></td>
-          <td className={cellClassName}>
-            {getTokenAmount(tx.fee, tx.feeToken.decimals)} {tx.feeToken.symbol}
-          </td>
+          <td className={cellClassName}>{/* {getTokenAmount(tx.fee, tx.feeToken.decimals)} {tx.feeToken.symbol} */}</td>
         </>
       );
     case 'DataNFT':
