@@ -7,6 +7,7 @@ import CursorPagination from '../CursorPagination';
 import { ApolloQueryResult, gql } from '@apollo/client';
 import client from '../../graphql';
 import { debounce } from 'lodash';
+import { useAccountNFT } from '../../hooks/useAccountNFT';
 
 
 interface Props {
@@ -23,50 +24,7 @@ const ACCOUNT_NFT_SLOTS = gql`
 
 const AccountNFTs: React.FC<Props> = ({ accountId }) => {
   const TOTAL_COUNT = 8;
-  const SUMMARY = 100;
-
-  const [total, setTotal] = useState<ApolloQueryResult<{accountNFTSlots: {id: string, nftType: number}[]}> | undefined>(undefined)
-  useEffect(() => {
-    if (!accountId) return
-    (async () => {
-      const total = await client.query<{accountNFTSlots: {id: string, nftType: number}[]}>({
-        query: ACCOUNT_NFT_SLOTS,
-        variables: {
-          where: {
-            account: accountId,
-            balance_gt: 0,
-          },
-          first: SUMMARY,
-          orderDirection: OrderDirection.Desc,
-        },
-      })
-      setTotal(total)
-    })();
-  }, [accountId])
-  const [searchInput, setSearchInput] = useState('')
-  const debouncedFn = useCallback(debounce(() => {
-    refetch()
-  }, 500), []);
-  const { data, fetchMore, error, loading, refetch } = useAccountNftSlotsQuery({
-    variables: {
-      where: {
-        account: accountId,
-        balance_gt: 0,
-        ...(
-          searchInput
-            ? {
-              nft_: {
-                nftID: searchInput
-              }
-              
-            }
-            : {}
-        )
-      },
-      orderDirection: OrderDirection.Desc,
-    },
-    fetchPolicy: 'cache-and-network',
-  });
+  const {total, loading, error,data, fetchMore, debouncedFn, setSearchInput, searchInput} = useAccountNFT(accountId)
 
   if (loading) {
     return null;
