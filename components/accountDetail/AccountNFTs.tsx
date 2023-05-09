@@ -1,26 +1,15 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React from 'react';
 
 import NFT from '../NFT';
 import AppLink from '../AppLink';
-import { OrderDirection, useAccountNftSlotsQuery } from '../../generated/loopringExplorer';
+import { OrderDirection } from '../../generated/loopringExplorer';
 import CursorPagination from '../CursorPagination';
-import { ApolloQueryResult, gql } from '@apollo/client';
-import client from '../../graphql';
-import { debounce } from 'lodash';
 import { useAccountNFT } from '../../hooks/useAccountNFT';
 
 
 interface Props {
   accountId: string;
 }
-
-const ACCOUNT_NFT_SLOTS = gql`
-  query accountNFTSlots($where: AccountNFTSlot_filter, $orderDirection: OrderDirection) {
-    accountNFTSlots(orderDirection: $orderDirection, orderBy: id, first: $first, where: $where) {
-      id
-    }
-  }
-`;
 
 const AccountNFTs: React.FC<Props> = ({ accountId }) => {
   const TOTAL_COUNT = 8;
