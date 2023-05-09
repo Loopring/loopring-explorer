@@ -1,5 +1,4 @@
 import React from 'react';
-
 import NFT from '../NFT';
 import AppLink from '../AppLink';
 import { OrderDirection } from '../../generated/loopringExplorer';
