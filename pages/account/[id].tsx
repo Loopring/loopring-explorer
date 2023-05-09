@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import AppLink from '../../components/AppLink';
 import Transactions from '../../components/Transactions';
@@ -18,7 +18,10 @@ type WhereFilter = {
 
 const Account: React.FC<{}> = () => {
   const router = useRouter();
-  const { id } = router.query;
+  const rawId = router.query.id;
+  const list = (rawId as string)?.split('-')
+  const id = list ? list[0] : undefined
+  const isNFT = list ? list[1] === 'nfts' : false
 
   const whereFilter: WhereFilter = {};
   if (id && (id as string).startsWith('0x')) {
@@ -34,6 +37,10 @@ const Account: React.FC<{}> = () => {
     },
     skip: !id,
   });
+  const [currentTab, setCurrentTab] = React.useState(0);
+  useEffect(() => {
+    setCurrentTab(isNFT ? 1 : 0)
+  }, [isNFT])
 
   if (!data || !data.accounts) {
     return null;
@@ -102,6 +109,16 @@ const Account: React.FC<{}> = () => {
             view: <AccountNFTs accountId={accountId} />,
           },
         ]}
+        currentTab={currentTab}
+        setCurrentTab={(tab) => {
+          setCurrentTab(tab)
+          if (tab === 0) {
+            router.push(`/account/${id}`)
+          } else {
+            router.push(`/account/${id}-nfts`)
+          }
+          
+        }}
       />
       {data.accounts.length > 0 && (
         <div className="pt-8 pb-4">

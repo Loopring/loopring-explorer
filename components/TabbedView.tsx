@@ -5,11 +5,12 @@ interface Props {
     title: string;
     view: any;
   }>;
+  currentTab: number;
+  setCurrentTab: (tab: number) => void;
 }
 
-const TabbedView: React.FC<Props> = ({ tabs }) => {
-  const [currentTab, setCurrentTab] = React.useState(0);
-
+const TabbedView: React.FC<Props> = ({ tabs, currentTab, setCurrentTab}) => {
+  
   return (
     <div>
       <div className="flex items-center">

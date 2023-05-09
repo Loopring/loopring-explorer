@@ -344,7 +344,6 @@ export const getTransactionData = (blockId: number, index: number) => {
       }
     }
   }).catch(e => {
-    debugger
     throw e
   })
 }

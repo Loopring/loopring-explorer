@@ -56,7 +56,6 @@ const PendingTransactionFromAPI: React.FC<{ txId: string }> = ({ txId }) => {
       ? data[dataKey[txType]][0].storageInfo?.storageId
       : null;
   const { data: confirmedTx } = useCheckTxConfirmation(accountID, tokenID, storageID);
-
   const getParsedTxData = (transaction) => {
     switch (txType) {
       case 'trade':

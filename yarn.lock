@@ -2361,6 +2361,11 @@
   dependencies:
     "@types/node" "*"
 
+"@types/lodash@^4.14.194":
+  version "4.14.194"
+  resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.194.tgz#b71eb6f7a0ff11bff59fc987134a093029258a76"
+  integrity sha512-r22s9tAS7imvBt2lyHC9B8AGwWnXaYb1tY09oyLkXDs4vArpYJzw09nj8MLx5VfciBPGIb+ZwG0ssYnEPJxn/g==
+
 "@types/node@*":
   version "18.7.4"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-18.7.4.tgz#95baa50846ae112a7376869d49fec23b2506c69d"
@@ -6323,10 +6328,10 @@ log-update@^4.0.0:
     slice-ansi "^4.0.0"
     wrap-ansi "^6.2.0"
 
-loopring36-block-parser2@^0.0.5:
-  version "0.0.5"
-  resolved "https://registry.yarnpkg.com/loopring36-block-parser2/-/loopring36-block-parser2-0.0.5.tgz#2ef3310f32fcfcb971ecdb120571f99efe694796"
-  integrity sha512-DhgGVOOOdblf+6iYwvo2EZ4l0hxyYbzsulB10tXfz+j7c4zNAUugGK+oxsQlImuqZDyyjzuzKSowCUKZaVt7ZQ==
+loopring36-block-parser2@^0.0.6:
+  version "0.0.6"
+  resolved "https://registry.yarnpkg.com/loopring36-block-parser2/-/loopring36-block-parser2-0.0.6.tgz#68084a14f3c2c4fa9466f61b050e47182a0a0f7a"
+  integrity sha512-+t0e8HcykNkxBt4mSQNgktidgmeGgrd/gWm46u9R/EyadDjmmUXXfvlsXE9gBTNhsvKqAFcdO+SC/Wb4BBQvWA==
   dependencies:
     axios "^0.21.0"
     bignumber.js "^9.1.1"

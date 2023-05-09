@@ -32,7 +32,7 @@ const SearchForm: React.FC<{ className?: string }> = ({ className }) => {
         type="text"
         name="query"
         className="h-10 w-full lg:w-auto flex-1 rounded-xl px-3 py-3 lg:py-0 placeholder-loopring-lightBlue placeholder-opacity-70"
-        placeholder="Search for block, tx, or account ID"
+        placeholder="Search for block, tx, account ID, Collection Address"
         onFocus={() => router.prefetch("/search")}
       />
       <button

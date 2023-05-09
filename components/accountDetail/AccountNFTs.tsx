@@ -1,21 +1,67 @@
-import React from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import NFT from '../NFT';
 import AppLink from '../AppLink';
 import { OrderDirection, useAccountNftSlotsQuery } from '../../generated/loopringExplorer';
 import CursorPagination from '../CursorPagination';
+import { ApolloQueryResult, gql } from '@apollo/client';
+import client from '../../graphql';
+import { debounce } from 'lodash';
+
 
 interface Props {
   accountId: string;
 }
 
+const ACCOUNT_NFT_SLOTS = gql`
+  query accountNFTSlots($where: AccountNFTSlot_filter, $orderDirection: OrderDirection) {
+    accountNFTSlots(orderDirection: $orderDirection, orderBy: id, first: $first, where: $where) {
+      id
+    }
+  }
+`;
+
 const AccountNFTs: React.FC<Props> = ({ accountId }) => {
   const TOTAL_COUNT = 8;
-  const { data, fetchMore, error, loading } = useAccountNftSlotsQuery({
+  const SUMMARY = 100;
+
+  const [total, setTotal] = useState<ApolloQueryResult<{accountNFTSlots: {id: string, nftType: number}[]}> | undefined>(undefined)
+  useEffect(() => {
+    if (!accountId) return
+    (async () => {
+      const total = await client.query<{accountNFTSlots: {id: string, nftType: number}[]}>({
+        query: ACCOUNT_NFT_SLOTS,
+        variables: {
+          where: {
+            account: accountId,
+            balance_gt: 0,
+          },
+          first: SUMMARY,
+          orderDirection: OrderDirection.Desc,
+        },
+      })
+      setTotal(total)
+    })();
+  }, [accountId])
+  const [searchInput, setSearchInput] = useState('')
+  const debouncedFn = useCallback(debounce(() => {
+    refetch()
+  }, 500), []);
+  const { data, fetchMore, error, loading, refetch } = useAccountNftSlotsQuery({
     variables: {
       where: {
         account: accountId,
         balance_gt: 0,
+        ...(
+          searchInput
+            ? {
+              nft_: {
+                nftID: searchInput
+              }
+              
+            }
+            : {}
+        )
       },
       orderDirection: OrderDirection.Desc,
     },
@@ -34,14 +80,42 @@ const AccountNFTs: React.FC<Props> = ({ accountId }) => {
     );
   }
 
+  const totalCount = total?.data?.accountNFTSlots 
+    ? (total?.data?.accountNFTSlots?.length >= 100 ? "100+" : total?.data?.accountNFTSlots?.length)
+    : "--"
+
   return (
     <div>
+      <div style={{marginBottom: "10px"}}>
+        <span style={{
+          fontSize: "20px",
+          marginRight: "20px",
+        }}>{totalCount} Items</span> 
+        <input
+          type="text"
+          name="query"
+          className="gray-color h-10 w-full lg:w-auto flex-1 rounded-xl px-3 py-3 lg:py-0 placeholder-loopring-lightBlue placeholder-opacity-70"
+          placeholder="Search NFT by Token ID"
+          style={{
+            background: "transparent",
+            
+            border: "1px solid rgb(154 161 185 / var(--tw-text-opacity))",
+            width: "300px",
+          }}
+          value={searchInput}
+          onInput={(e) => {
+            setSearchInput(e.currentTarget.value)
+            debouncedFn()
+          }}
+        />
+      </div>
       {data.accountNFTSlots.length === 0 ? (
         <div className="text-gray-400 text-2xl h-40 flex items-center justify-center w-full border">
           No NFTs to show
         </div>
       ) : (
         <>
+        
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
             {data.accountNFTSlots.map((slot, index) => {
               const { id, balance, nft } = slot;
