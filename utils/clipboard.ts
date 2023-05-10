@@ -15,8 +15,6 @@ export async function copyToClipBoard(text: string) {
 
   if ((window as any).clipboardData) {
       (window as any).clipboardData.setData("Text", text)
-
-      myLog('clipboardData:', text)
       return true
   }
   return false
