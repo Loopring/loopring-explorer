@@ -31,6 +31,7 @@ const NFTTransactions: React.FC<{ nftId: string }> = ({ nftId }) => {
     };
   }
   const { data, error, loading, fetchMore } = useTransactionNfTsQuery({
+    fetchPolicy: 'no-cache',
     variables,
   });
 

@@ -85,6 +85,7 @@ const NFTCollection: React.FC<{}> = () => {
     if (!router.query.address) return
     (async () => {
       const total = await client.query<{ nonFungibleTokens: { id: string, nftType: number }[] }>({
+        fetchPolicy: 'no-cache',
         query: NON_FUNGIBLE_TOKENS,
         variables: {
           where: {
@@ -105,6 +106,7 @@ const NFTCollection: React.FC<{}> = () => {
     })();
   }, [router.query.address])
   const { data, loading, fetchMore, refetch } = useNonFungibleTokensQuery({
+    fetchPolicy: 'no-cache',
     skip: !router.query.address,
     variables: {
       where: {
@@ -126,7 +128,14 @@ const NFTCollection: React.FC<{}> = () => {
   }, 500), []);
 
   if (!data || minters?.length === 0 || loading) {
-    return null;
+    return <div style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      height: "70vh",
+    }}>
+      <img width="80px" src="/loading-line.gif" />
+    </div>
   }
   const totalCount = total.data?.nonFungibleTokens
     ? (total.data?.nonFungibleTokens?.length >= 100 ? "100+" : total.data?.nonFungibleTokens?.length)
@@ -193,7 +202,7 @@ const NFTCollection: React.FC<{}> = () => {
               type="text"
               name="query"
               className="gray-color h-10 w-full lg:w-auto flex-1 rounded-xl px-3 py-3 lg:py-0 placeholder-loopring-lightBlue placeholder-opacity-70"
-              placeholder="Search NFT by Token ID"
+              placeholder="Search NFT by NFT ID"
               style={{
                 background: "transparent",
                 marginLeft: "20px",

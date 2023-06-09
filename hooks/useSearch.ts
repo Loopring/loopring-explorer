@@ -14,15 +14,16 @@ const useSearch = (query: string) => {
     },
   });
   const { data: accountData, isLoading: accountIsLoading } = useAccounts(query);
-  
+
   const { data: NFTCollectionData, loading: NFTCollectionLoading } = useNonFungibleTokensQuery({
+    fetchPolicy: 'no-cache',
     variables: {
       where: {
-        token_in: [query],
+        token: query,
       },
       first: 1,
     },
-  });
+  });  
 
   const [resultLoaded, setResultLoaded] = React.useState(false);
 
@@ -35,7 +36,8 @@ const useSearch = (query: string) => {
   console.log('results', results)
 
   React.useEffect(() => {
-    if (!blockIsLoading && !txIsLoading && !accountIsLoading) {
+    // debugger
+    if (!blockIsLoading && !txIsLoading && !accountIsLoading && !NFTCollectionLoading) {
       const allResults = [];
       if (blockData && blockData.block) {
         allResults.push({
@@ -70,7 +72,7 @@ const useSearch = (query: string) => {
       setResults(allResults);
       setResultLoaded(true);
     }
-  }, [blockIsLoading, blockData, txIsLoading, txData, accountIsLoading, accountData, NFTCollectionData, NFTCollectionLoading,query]);
+  }, [blockIsLoading, blockData, txIsLoading, txData, accountIsLoading, accountData, NFTCollectionData, NFTCollectionLoading, query]);
 
   return {
     loaded: resultLoaded,

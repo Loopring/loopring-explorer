@@ -41,7 +41,7 @@ const AccountNFTs: React.FC<Props> = ({ accountId }) => {
           type="text"
           name="query"
           className="gray-color h-10 w-full lg:w-auto flex-1 rounded-xl px-3 py-3 lg:py-0 placeholder-loopring-lightBlue placeholder-opacity-70"
-          placeholder="Search NFT by Token ID"
+          placeholder="Search NFT by NFT ID"
           style={{
             background: "transparent",
             

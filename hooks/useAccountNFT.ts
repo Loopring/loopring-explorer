@@ -19,6 +19,7 @@ export const useAccountNFT = (accountId: string) => {
     if (!accountId) return
     (async () => {
       const total = await client.query<{accountNFTSlots: {id: string, nftType: number}[]}>({
+        fetchPolicy: 'no-cache',
         query: ACCOUNT_NFT_SLOTS,
         variables: {
           where: {
@@ -54,7 +55,7 @@ export const useAccountNFT = (accountId: string) => {
       },
       orderDirection: OrderDirection.Desc,
     },
-    fetchPolicy: 'cache-and-network',
+    fetchPolicy: 'no-cache',
   });
   return {total, loading, error,data, fetchMore, debouncedFn, setSearchInput, searchInput}
 }
