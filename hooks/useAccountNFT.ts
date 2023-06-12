@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import client from "../graphql";
 import { OrderDirection, useAccountNftSlotsQuery } from "../generated/loopringExplorer";
 import { debounce } from "lodash";
+import useDebounce from "./useDebounce";
 
 const ACCOUNT_NFT_SLOTS = gql`
   query accountNFTSlots($where: AccountNFTSlot_filter, $orderDirection: OrderDirection) {
@@ -11,9 +12,9 @@ const ACCOUNT_NFT_SLOTS = gql`
     }
   }
 `;
+
 export const useAccountNFT = (accountId: string) => {
   const SUMMARY = 100;
-
   const [total, setTotal] = useState<ApolloQueryResult<{accountNFTSlots: {id: string, nftType: number}[]}> | undefined>(undefined)
   useEffect(() => {
     if (!accountId) return
@@ -34,9 +35,38 @@ export const useAccountNFT = (accountId: string) => {
     })();
   }, [accountId])
   const [searchInput, setSearchInput] = useState('')
-  const debouncedFn = useCallback(debounce(() => {
-    refetch()
-  }, 500), []);
+  const debouncedSearchTerm = useDebounce(searchInput, 500);
+  const callBack = useCallback((searchInput: string) => {
+    (async () => {
+      console.log('debouncedFn')
+      refetch()
+      const total = await client.query<{ accountNFTSlots: { id: string, nftType: number }[] }>({
+        fetchPolicy: 'no-cache',
+        query: ACCOUNT_NFT_SLOTS,
+        variables: {
+          where: {
+            account: accountId,
+            balance_gt: 0,
+            ...(
+              searchInput
+                ? {
+                  nft_: {
+                    nftID: searchInput
+                  }
+                }
+                : {}
+            )
+          },
+          first: SUMMARY,
+          orderDirection: OrderDirection.Desc,
+        },
+      })
+      setTotal(total)
+    })()
+  }, []);
+  useEffect(() => {
+    callBack(debouncedSearchTerm)
+  }, [debouncedSearchTerm])
   const { data, fetchMore, error, loading, refetch } = useAccountNftSlotsQuery({
     variables: {
       where: {
@@ -48,7 +78,6 @@ export const useAccountNFT = (accountId: string) => {
               nft_: {
                 nftID: searchInput
               }
-              
             }
             : {}
         )
@@ -57,5 +86,5 @@ export const useAccountNFT = (accountId: string) => {
     },
     fetchPolicy: 'no-cache',
   });
-  return {total, loading, error,data, fetchMore, debouncedFn, setSearchInput, searchInput}
+  return {total, loading, error,data, fetchMore, setSearchInput, searchInput}
 }

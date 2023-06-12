@@ -13,6 +13,7 @@ import { debounce } from 'lodash';
 import { ApolloQueryResult, gql } from '@apollo/client';
 import client from '../../graphql';
 import { IPFS_URL, NFTInfo, getNFTMetadata, getNFTURI } from '../../utils/nft';
+import useDebounce from '../../hooks/useDebounce';
 
 
 const provider = new ethers.providers.JsonRpcProvider(INFURA_ENDPOINT);
@@ -99,6 +100,14 @@ const NFTCollection: React.FC<{}> = () => {
       const nft = total.data.nonFungibleTokens[0]
       const uri = await getNFTURI(nft);
       const metadata = await getNFTMetadata(uri, nft);
+      if (metadata.collection_metadata) {
+        // fetch(metadata.collection_metadata)
+        // .then(res => res.json())
+        // .then(json => {
+        //   debugger
+        // })
+      }
+      
       setFirstMetadata({
         imageUrl: metadata?.image?.replace('ipfs://', IPFS_URL),
         nftType: nft.nftType
@@ -123,9 +132,38 @@ const NFTCollection: React.FC<{}> = () => {
       orderDirection: OrderDirection.Desc,
     },
   });
-  const debouncedFn = useCallback(debounce(() => {
-    refetch()
-  }, 500), []);
+  const debouncedSearchInput = useDebounce(searchInput, 500)
+
+  const callBack = useCallback((searchInput: string) => {
+    (async () => {
+      await refetch()
+      const total = await client.query<{ nonFungibleTokens: { id: string, nftType: number }[] }>({
+        fetchPolicy: 'no-cache',
+        query: NON_FUNGIBLE_TOKENS,
+        variables: {
+          where: {
+            token_in: [router.query.address as string],
+            ...(
+              searchInput
+                ? {
+                  nftID: searchInput
+                }
+                : {}
+            )
+          },
+          first: SUMMARY,
+          orderDirection: OrderDirection.Desc,
+        },
+      })
+      setTotal(total)
+    })()
+  }, [router.query.address, setTotal]);
+
+  useEffect(() => {
+    callBack(debouncedSearchInput)
+  }, [debouncedSearchInput])
+  
+  const [copied, setCopied] = useState(false)
 
   if (!data || minters?.length === 0 || loading) {
     return <div style={{
@@ -141,6 +179,7 @@ const NFTCollection: React.FC<{}> = () => {
     ? (total.data?.nonFungibleTokens?.length >= 100 ? "100+" : total.data?.nonFungibleTokens?.length)
     : "--"
   const nfts = data.nonFungibleTokens;
+  
   return (
     <div className="p-10">
       <div style={{
@@ -171,11 +210,20 @@ const NFTCollection: React.FC<{}> = () => {
                 <p>{name || "--"}</p>
                 <p>
                   <span>{getTrimmedTxHash(router.query.address as string, 14, true)} </span>
-                  <img style={{ display: "inline-block", width: "20px", cursor: "pointer" }} src="/copy.svg" onClick={() => {
-                    if (typeof router.query.address === "string") {
-                      copyToClipBoard(router.query.address)
-                    }
-                  }} />
+                  
+                  <img
+                    style={{ display: "inline-block", width: "20px", cursor: "pointer" }}
+                    src={copied ? "/green-tick.svg" : "/copy.svg"} 
+                    onClick={() => {
+                      if (typeof router.query.address === "string") {
+                        setCopied(true)
+                        copyToClipBoard(router.query.address)
+                        setTimeout(() => {
+                          setCopied(false)
+                        }, 1000);
+                      }
+                    }}
+                  />
                 </p>
                 <p>
                   Item:
@@ -212,7 +260,6 @@ const NFTCollection: React.FC<{}> = () => {
               value={searchInput}
               onInput={(e) => {
                 setSearchInput(e.currentTarget.value)
-                debouncedFn()
               }}
             />
           </div>

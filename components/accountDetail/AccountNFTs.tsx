@@ -12,7 +12,7 @@ interface Props {
 
 const AccountNFTs: React.FC<Props> = ({ accountId }) => {
   const TOTAL_COUNT = 8;
-  const {total, loading, error,data, fetchMore, debouncedFn, setSearchInput, searchInput} = useAccountNFT(accountId)
+  const {total, loading, error,data, fetchMore, setSearchInput, searchInput} = useAccountNFT(accountId)
 
   if (loading) {
     return null;
@@ -51,7 +51,6 @@ const AccountNFTs: React.FC<Props> = ({ accountId }) => {
           value={searchInput}
           onInput={(e) => {
             setSearchInput(e.currentTarget.value)
-            debouncedFn()
           }}
         />
       </div>
