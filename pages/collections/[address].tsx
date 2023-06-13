@@ -180,7 +180,7 @@ const NFTCollection: React.FC<{}> = () => {
           {/* <img style={{ width: "100%" }} src={firstMetadata?.imageUrl ?? ""} /> */}
           <div style={{ display: "flex", justifyContent: "space-between", color: "white", background: "#29293F" }}>
             <div style={{ display: "flex" }}>
-              <img style={{ borderRadius: "10px", marginLeft: "30px", marginBottom: "30px", marginTop: "-30px", width: "200px", height: "200px" }} src={firstMetadata?.imageUrl ?? ""} />
+              <img style={{ borderRadius: "10px", marginLeft: "30px", marginBottom: "30px", marginTop: "-30px", width: "200px", height: "200px" }} src={firstMetadata?.imageUrl ? firstMetadata?.imageUrl : undefined} />
               <div style={{ marginTop: "20px", marginLeft: "20px", }}>
                 {/* <p>{name || "--"}</p> */}
                 <p>
