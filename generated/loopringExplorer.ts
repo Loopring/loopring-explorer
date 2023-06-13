@@ -12867,6 +12867,7 @@ export type AccountTokenBalancesQuery = {
 export type AccountNftSlotsQueryVariables = Exact<{
   where?: InputMaybe<AccountNftSlot_Filter>;
   orderDirection?: InputMaybe<OrderDirection>;
+  first?: InputMaybe<Scalars['Int']>;
 }>;
 
 export type AccountNftSlotsQuery = {
@@ -14813,8 +14814,8 @@ export function refetchAccountTokenBalancesQuery(variables?: AccountTokenBalance
   return { query: AccountTokenBalancesDocument, variables: variables };
 }
 export const AccountNftSlotsDocument = gql`
-  query accountNFTSlots($where: AccountNFTSlot_filter, $orderDirection: OrderDirection) {
-    accountNFTSlots(orderDirection: $orderDirection, orderBy: id, first: 8, where: $where) {
+  query accountNFTSlots($where: AccountNFTSlot_filter, $orderDirection: OrderDirection, $first: Int) {
+    accountNFTSlots(orderDirection: $orderDirection, orderBy: id, first: $first, where: $where) {
       id
       nft {
         ...NFTFragment
@@ -14845,6 +14846,7 @@ export const AccountNftSlotsDocument = gql`
  *   variables: {
  *      where: // value for 'where'
  *      orderDirection: // value for 'orderDirection'
+ *      first: // value for 'first'
  *   },
  * });
  */

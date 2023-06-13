@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { ethers } from 'ethers';
 
@@ -9,12 +9,8 @@ import getTrimmedTxHash from '../../utils/getTrimmedTxHash';
 import { OrderDirection, useNonFungibleTokensQuery } from '../../generated/loopringExplorer';
 import CursorPagination from '../../components/CursorPagination';
 import { copyToClipBoard } from '../../utils/clipboard';
-import { debounce } from 'lodash';
-import { ApolloQueryResult, gql } from '@apollo/client';
-import client from '../../graphql';
+import { gql } from '@apollo/client';
 import { IPFS_URL, NFTInfo, getNFTMetadata, getNFTURI } from '../../utils/nft';
-import useDebounce from '../../hooks/useDebounce';
-
 
 const provider = new ethers.providers.JsonRpcProvider(INFURA_ENDPOINT);
 const getMinters = async (address) => {
@@ -69,35 +65,63 @@ const NFTCollection: React.FC<{}> = () => {
   const ENTRIES_PER_PAGE = 21;
   const SUMMARY = 100;
   const [minters, setMinters] = React.useState([]);
-  const [name, setName] = React.useState<string>();
+  // const [name, setName] = React.useState<string>();
 
   React.useEffect(() => {
     (async () => {
       const mintersList = await getMinters(router.query.address);
-      const name = await getCollectionName(router.query.address);
+      // const name = await getCollectionName(router.query.address);
       setMinters(mintersList);
-      setName(name);
+      // setName(name);
     })();
   }, [router.query.address]);
   const [searchInput, setSearchInput] = useState('')
-  const [total, setTotal] = useState<ApolloQueryResult<{ nonFungibleTokens: { id: string, nftType: number }[] }> | undefined>(undefined)
   const [firstMetadata, setFirstMetadata] = React.useState<NFTInfo | undefined>(undefined);
+  const [feedSearchInput, setFeedSearchInput] = useState('')
+  const { data, loading, fetchMore, refetch } = useNonFungibleTokensQuery({
+    fetchPolicy: 'no-cache',
+    // skip: !router.query.address,
+    variables: {
+      where: {
+        token_in: [router.query.address as string],
+        ...(
+          feedSearchInput
+            ? {
+              nftID: feedSearchInput
+            }
+            : {}
+        )
+      },
+      first: ENTRIES_PER_PAGE,
+      orderDirection: OrderDirection.Desc,
+    
+    },
+  });
+
+  const { data: total } = useNonFungibleTokensQuery({
+    fetchPolicy: 'no-cache',
+    query: NON_FUNGIBLE_TOKENS,
+    variables: {
+      where: {
+        token_in: [router.query.address as string],
+        ...(
+          feedSearchInput
+            ? {
+              nftID: feedSearchInput
+            }
+            : {}
+        )
+      },
+      first: SUMMARY,
+      orderDirection: OrderDirection.Desc,
+    },
+  })
+
   useEffect(() => {
-    if (!router.query.address) return
     (async () => {
-      const total = await client.query<{ nonFungibleTokens: { id: string, nftType: number }[] }>({
-        fetchPolicy: 'no-cache',
-        query: NON_FUNGIBLE_TOKENS,
-        variables: {
-          where: {
-            token_in: [router.query.address as string],
-          },
-          first: SUMMARY,
-          orderDirection: OrderDirection.Desc,
-        },
-      })
-      setTotal(total)
-      const nft = total.data.nonFungibleTokens[0]
+      if (!total?.nonFungibleTokens[0]) return
+      total.nonFungibleTokens
+      const nft = total.nonFungibleTokens[0]
       const uri = await getNFTURI(nft);
       const metadata = await getNFTMetadata(uri, nft);
       if (metadata.collection_metadata) {
@@ -107,61 +131,12 @@ const NFTCollection: React.FC<{}> = () => {
         //   debugger
         // })
       }
-      
       setFirstMetadata({
         imageUrl: metadata?.image?.replace('ipfs://', IPFS_URL),
         nftType: nft.nftType
       });
-    })();
-  }, [router.query.address])
-  const { data, loading, fetchMore, refetch } = useNonFungibleTokensQuery({
-    fetchPolicy: 'no-cache',
-    skip: !router.query.address,
-    variables: {
-      where: {
-        token_in: [router.query.address as string],
-        ...(
-          searchInput
-            ? {
-              nftID: searchInput
-            }
-            : {}
-        )
-      },
-      first: ENTRIES_PER_PAGE,
-      orderDirection: OrderDirection.Desc,
-    },
-  });
-  const debouncedSearchInput = useDebounce(searchInput, 500)
-
-  const callBack = useCallback((searchInput: string) => {
-    (async () => {
-      await refetch()
-      const total = await client.query<{ nonFungibleTokens: { id: string, nftType: number }[] }>({
-        fetchPolicy: 'no-cache',
-        query: NON_FUNGIBLE_TOKENS,
-        variables: {
-          where: {
-            token_in: [router.query.address as string],
-            ...(
-              searchInput
-                ? {
-                  nftID: searchInput
-                }
-                : {}
-            )
-          },
-          first: SUMMARY,
-          orderDirection: OrderDirection.Desc,
-        },
-      })
-      setTotal(total)
     })()
-  }, [router.query.address, setTotal]);
-
-  useEffect(() => {
-    callBack(debouncedSearchInput)
-  }, [debouncedSearchInput])
+  }, [total])
   
   const [copied, setCopied] = useState(false)
 
@@ -175,8 +150,8 @@ const NFTCollection: React.FC<{}> = () => {
       <img width="80px" src="/loading-line.gif" />
     </div>
   }
-  const totalCount = total.data?.nonFungibleTokens
-    ? (total.data?.nonFungibleTokens?.length >= 100 ? "100+" : total.data?.nonFungibleTokens?.length)
+  const totalCount = total?.nonFungibleTokens
+    ? (total?.nonFungibleTokens?.length >= 100 ? "100+" : total?.nonFungibleTokens?.length)
     : "--"
   const nfts = data.nonFungibleTokens;
   
@@ -207,7 +182,7 @@ const NFTCollection: React.FC<{}> = () => {
             <div style={{ display: "flex" }}>
               <img style={{ borderRadius: "10px", marginLeft: "30px", marginBottom: "30px", marginTop: "-30px", width: "200px", height: "200px" }} src={firstMetadata?.imageUrl ?? ""} />
               <div style={{ marginTop: "20px", marginLeft: "20px", }}>
-                <p>{name || "--"}</p>
+                {/* <p>{name || "--"}</p> */}
                 <p>
                   <span>{getTrimmedTxHash(router.query.address as string, 14, true)} </span>
                   
@@ -262,6 +237,15 @@ const NFTCollection: React.FC<{}> = () => {
                 setSearchInput(e.currentTarget.value)
               }}
             />
+            <button
+              type="submit"
+              className="bg-loopring-darkBlue mt-4 lg:mt-0 py-1 px-10 ml-2 rounded-xl text-white h-10 dark:bg-loopring-dark-blue"
+              onClick={() => {
+                setFeedSearchInput(searchInput)
+              }}
+            >
+              Search
+            </button>
           </div>
         </div>
 
