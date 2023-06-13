@@ -12,7 +12,7 @@ interface Props {
 
 const AccountNFTs: React.FC<Props> = ({ accountId }) => {
   const TOTAL_COUNT = 8;
-  const {total, loading, error,data, fetchMore, setSearchInput, searchInput} = useAccountNFT(accountId)
+  const {total, loading, error, data, fetchMore, setSearchInput, searchInput, onClickSearch, feedSearchInput} = useAccountNFT(accountId)
 
   if (loading) {
     return null;
@@ -26,8 +26,8 @@ const AccountNFTs: React.FC<Props> = ({ accountId }) => {
     );
   }
 
-  const totalCount = total?.data?.accountNFTSlots 
-    ? (total?.data?.accountNFTSlots?.length >= 100 ? "100+" : total?.data?.accountNFTSlots?.length)
+  const totalCount = total?.accountNFTSlots 
+    ? (total?.accountNFTSlots?.length >= 100 ? "100+" : total?.accountNFTSlots?.length)
     : "--"
 
   return (
@@ -53,6 +53,15 @@ const AccountNFTs: React.FC<Props> = ({ accountId }) => {
             setSearchInput(e.currentTarget.value)
           }}
         />
+        <button
+          type="submit"
+          className="bg-loopring-darkBlue mt-4 lg:mt-0 py-1 px-10 ml-2 rounded-xl text-white h-10 dark:bg-loopring-dark-blue"
+          onClick={() => {
+            onClickSearch()
+          }}
+        >
+          Search
+        </button>
       </div>
       {data.accountNFTSlots.length === 0 ? (
         <div className="text-gray-400 text-2xl h-40 flex items-center justify-center w-full border">
@@ -85,17 +94,26 @@ const AccountNFTs: React.FC<Props> = ({ accountId }) => {
             })}
           </div>
           <CursorPagination
-            onNextClick={(fetchNext, afterCursor) =>
+            onNextClick={(fetchNext, afterCursor) => {
               fetchNext({
                 variables: {
                   where: {
                     account: accountId,
                     id_lt: afterCursor,
                     balance_gt: 0,
+                    ...(
+                      feedSearchInput
+                        ? {
+                          nft_: {
+                            nftID: feedSearchInput
+                          }
+                        }
+                        : {}
+                    )
                   },
                 },
               })
-            }
+            }}
             onPreviousClick={(fetchPrevious, beforeCursor) =>
               fetchPrevious({
                 variables: {
@@ -103,6 +121,15 @@ const AccountNFTs: React.FC<Props> = ({ accountId }) => {
                     account: accountId,
                     id_gt: beforeCursor,
                     balance_gt: 0,
+                    ...(
+                      feedSearchInput
+                        ? {
+                          nft_: {
+                            nftID: feedSearchInput
+                          }
+                        }
+                        : {}
+                    )
                   },
                   orderDirection: OrderDirection.Asc,
                 },

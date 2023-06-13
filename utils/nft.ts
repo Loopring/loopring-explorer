@@ -116,3 +116,32 @@ export const getNFTMetadata = async (uri, nft, isErrorFallback = false) => {
     }
   }
 };
+export const getCollectionMetadata = async (uri) => {
+  return fetch(uri).then((res) => res.json());
+  // const cacheKey = nft.id;
+  // let cacheResult = metadataCache.get(cacheKey);
+  // if (cacheResult) {
+  //   return cacheResult;
+  // } else {
+  //   if (!uri) {
+  //     return {
+  //       image: '/error',
+  //       animation_url: '/error',
+  //       name: "Couldn't fetch NFT details",
+  //     };
+  //   }
+  //   try {
+  //     const metadata = await fetch(uri.replace('ipfs://', IPFS_URL)).then((res) => res.json());
+  //     metadataCache.set(cacheKey, metadata);
+  //     return metadata;
+  //   } catch (error) {
+  //     if (!isErrorFallback) {
+  //       return getNFTMetadata(`${uri}/metadata.json`, nft, true);
+  //     }
+  //     return {
+  //       image: '/error',
+  //       name: "Couldn't fetch NFT details",
+  //     };
+  //   }
+  // }
+};
