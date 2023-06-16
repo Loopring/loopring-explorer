@@ -17,7 +17,6 @@ export const useAccountNFT = (accountId: string) => {
   const SUMMARY = 100;
   const [searchInput, setSearchInput] = useState('')
   const [feedSearchInput, setFeedSearchInput] = useState('')
-  
   const { data, fetchMore, error, loading, refetch } = useAccountNftSlotsQuery({
     variables: {
       where: {
@@ -36,7 +35,7 @@ export const useAccountNFT = (accountId: string) => {
       first: 8,
       orderDirection: OrderDirection.Desc,
     },
-    fetchPolicy: 'no-cache',
+    fetchPolicy: 'cache-and-network',
   });
   const onClickSearch = useCallback(() => {
     setFeedSearchInput(searchInput)
@@ -44,7 +43,6 @@ export const useAccountNFT = (accountId: string) => {
   useEffect(() => {
     refetch()
   }, [feedSearchInput])
-  
   const { data: total } = useAccountNftSlotsQuery({
     fetchPolicy: 'no-cache',
     query: ACCOUNT_NFT_SLOTS,
