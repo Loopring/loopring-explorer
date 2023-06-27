@@ -4,7 +4,7 @@ import { ethers } from 'ethers';
 
 import AppLink from '../../components/AppLink';
 import NFT from '../../components/NFT';
-import { INFURA_ENDPOINT } from '../../utils/config';
+import { INFURA_ENDPOINT, LOOPRING_API, loopringApiEndpoints } from '../../utils/config';
 import getTrimmedTxHash from '../../utils/getTrimmedTxHash';
 import { OrderDirection, useNonFungibleTokensQuery } from '../../generated/loopringExplorer';
 import CursorPagination from '../../components/CursorPagination';
@@ -31,15 +31,20 @@ const getMinters = async (address) => {
   }
 };
 
-const getCollectionName = async (address) => {
+const getCollectionName = async (address)=> {
   if (!address) {
-    return [];
+    return null;
   }
   try {
-    const abi = [`function name() public view virtual override returns (string memory)`];
-    const nftContract = new ethers.Contract(address, abi, provider);
+    const endpoint = `${LOOPRING_API}${loopringApiEndpoints.collection}?collectionAddress=${address}`;
+    const res = await fetch(endpoint).then((res) => res.json());
+    return {
+      name: res.name as string, 
+      avatar: res.avatar as string,
+      banner: res.tileUri as string,
+      nftType: res.nftType as string,
+    }
 
-    return await nftContract.name();
   } catch (error) {
     return null;
   }
@@ -65,18 +70,24 @@ const NFTCollection: React.FC<{}> = () => {
   const ENTRIES_PER_PAGE = 21;
   const SUMMARY = 100;
   const [minters, setMinters] = React.useState([]);
-  // const [name, setName] = React.useState<string>();
-
+  const [name, setName] = React.useState<string>();
+  const [metadata, setMetadata] = React.useState<{ avatar: string, banner?: string, nftType: string } | undefined>(undefined);
   React.useEffect(() => {
     (async () => {
       const mintersList = await getMinters(router.query.address);
-      // const name = await getCollectionName(router.query.address);
+      const response = await getCollectionName(router.query.address);
       setMinters(mintersList);
-      // setName(name);
+      if (response) {
+        setName(response.name);
+        setMetadata({
+          avatar: response.avatar ? response.avatar.replace('ipfs://', IPFS_URL) : undefined,
+          banner: response.banner.replace('ipfs://', IPFS_URL),
+          nftType: response.nftType,
+        });
+      }
     })();
   }, [router.query.address]);
   const [searchInput, setSearchInput] = useState('')
-  const [firstMetadata, setFirstMetadata] = React.useState<NFTInfo | undefined>(undefined);
   const [feedSearchInput, setFeedSearchInput] = useState('')
   const { data, loading, fetchMore, refetch } = useNonFungibleTokensQuery({
     fetchPolicy: 'no-cache',
@@ -117,26 +128,6 @@ const NFTCollection: React.FC<{}> = () => {
     },
   })
 
-  useEffect(() => {
-    (async () => {
-      if (!total?.nonFungibleTokens[0]) return
-      total.nonFungibleTokens
-      const nft = total.nonFungibleTokens[0]
-      const uri = await getNFTURI(nft);
-      const metadata = await getNFTMetadata(uri, nft);
-      if (metadata.collection_metadata) {
-        // fetch(metadata.collection_metadata)
-        // .then(res => res.json())
-        // .then(json => {
-        //   debugger
-        // })
-      }
-      setFirstMetadata({
-        imageUrl: metadata?.image?.replace('ipfs://', IPFS_URL),
-        nftType: nft.nftType
-      });
-    })()
-  }, [total])
   
   const [copied, setCopied] = useState(false)
 
@@ -170,7 +161,7 @@ const NFTCollection: React.FC<{}> = () => {
           maxWidth: "1200px"
         }}>
           <div style={{
-            backgroundImage: `url("${firstMetadata?.imageUrl ?? ""}")`,
+            backgroundImage: `url("${metadata?.banner ?? ""}")`,
             backgroundRepeat: "no-repeat",
             backgroundPosition: "center",
             backgroundSize: "cover",
@@ -180,9 +171,9 @@ const NFTCollection: React.FC<{}> = () => {
           {/* <img style={{ width: "100%" }} src={firstMetadata?.imageUrl ?? ""} /> */}
           <div style={{ display: "flex", justifyContent: "space-between", color: "white", background: "#29293F" }}>
             <div style={{ display: "flex" }}>
-              <img style={{ borderRadius: "10px", marginLeft: "30px", marginBottom: "30px", marginTop: "-30px", width: "200px", height: "200px" }} src={firstMetadata?.imageUrl ? firstMetadata?.imageUrl : undefined} />
+              {metadata?.avatar && <img style={{ visibility: 'hidden', borderRadius: "10px", marginLeft: "30px", marginBottom: "30px", marginTop: "-30px", width: "200px", height: "200px" }} src={metadata.avatar} />}
               <div style={{ marginTop: "20px", marginLeft: "20px", }}>
-                {/* <p>{name || "--"}</p> */}
+                <p>{name || "--"}</p>
                 <p>
                   <span>{getTrimmedTxHash(router.query.address as string, 14, true)} </span>
                   
@@ -200,14 +191,19 @@ const NFTCollection: React.FC<{}> = () => {
                     }}
                   />
                 </p>
-                <p>
+                <p style={{marginBottom: '24px'}}>
                   Item:
                   <span>{totalCount}</span>
                 </p>
               </div>
             </div>
             <p style={{ marginTop: "20px", marginRight: "20px" }}>
-              {firstMetadata?.nftType === 1 ? 'ERC-721' : firstMetadata?.nftType === 0 ? 'ERC-1155' : "--"}
+              {metadata?.nftType
+                ? (metadata.nftType === "ERC1155"
+                  ? 'ERC-1155'
+                  : 'ERC-721'
+                )
+                : "--"}
             </p>
           </div>
           <h2 style={{

@@ -21,6 +21,9 @@ export const apiEndpointByTxType = {
   nftTrade: 'user/nft/trades',
   accountUpdate: 'user/transactions',
 };
+export const loopringApiEndpoints = {
+  collection: 'nft/public/collection'
+};
 
 export const NFT_DISALLOW_LIST = [];
 
