@@ -44,9 +44,8 @@ const getCollectionName = async (address)=> {
       banner: res.tileUri as string,
       nftType: res.nftType as string,
     }
-
   } catch (error) {
-    return null;
+    return {};
   }
 };
 
@@ -71,7 +70,7 @@ const NFTCollection: React.FC<{}> = () => {
   const SUMMARY = 100;
   const [minters, setMinters] = React.useState([]);
   const [name, setName] = React.useState<string>();
-  const [metadata, setMetadata] = React.useState<{ avatar: string, banner?: string, nftType: string } | undefined>(undefined);
+  const [metadata, setMetadata] = React.useState<{ avatar?: string, banner?: string, nftType: string } | undefined>(undefined);
   React.useEffect(() => {
     (async () => {
       const mintersList = await getMinters(router.query.address);
@@ -81,8 +80,8 @@ const NFTCollection: React.FC<{}> = () => {
         setName(response.name);
         setMetadata({
           avatar: response.avatar ? response.avatar.replace('ipfs://', IPFS_URL) : undefined,
-          banner: response.banner.replace('ipfs://', IPFS_URL),
-          nftType: response.nftType,
+          banner: response.banner ? response.banner.replace('ipfs://', IPFS_URL) : undefined,
+          nftType: response.nftType ? response.nftType : undefined,
         });
       }
     })();
@@ -145,6 +144,21 @@ const NFTCollection: React.FC<{}> = () => {
     ? (total?.nonFungibleTokens?.length >= 100 ? "100+" : total?.nonFungibleTokens?.length)
     : "--"
   const nfts = data.nonFungibleTokens;
+
+
+  const nftType = metadata?.nftType
+    ? (metadata.nftType === "ERC1155"
+      ? 'ERC-1155'
+      : 'ERC-721'
+    )
+    : (data && data.nonFungibleTokens[0])
+      ? (
+        data.nonFungibleTokens[0].nftType === 1
+          ? 'ERC-721'
+          : data.nonFungibleTokens[0].nftType === 0
+            ? 'ERC-1155'
+            : "--")
+      : "--"
   
   return (
     <div className="p-10">
@@ -160,18 +174,18 @@ const NFTCollection: React.FC<{}> = () => {
           overflow: "hidden",
           maxWidth: "1200px"
         }}>
-          <div style={{
+          {metadata?.banner && <div style={{
             backgroundImage: `url("${metadata?.banner ?? ""}")`,
             backgroundRepeat: "no-repeat",
             backgroundPosition: "center",
             backgroundSize: "cover",
             height: "400px",
             width: "100%"
-          }}/>
+          }}/>}
           {/* <img style={{ width: "100%" }} src={firstMetadata?.imageUrl ?? ""} /> */}
           <div style={{ display: "flex", justifyContent: "space-between", color: "white", background: "#29293F" }}>
             <div style={{ display: "flex" }}>
-              {metadata?.avatar && <img style={{ visibility: 'hidden', borderRadius: "10px", marginLeft: "30px", marginBottom: "30px", marginTop: "-30px", width: "200px", height: "200px" }} src={metadata.avatar} />}
+              {metadata?.avatar && <img style={{ borderRadius: "10px", marginLeft: "30px", marginBottom: "30px", marginTop: "-30px", width: "200px", height: "200px" }} src={metadata.avatar} />}
               <div style={{ marginTop: "20px", marginLeft: "20px", }}>
                 <p>{name || "--"}</p>
                 <p>
@@ -198,12 +212,7 @@ const NFTCollection: React.FC<{}> = () => {
               </div>
             </div>
             <p style={{ marginTop: "20px", marginRight: "20px" }}>
-              {metadata?.nftType
-                ? (metadata.nftType === "ERC1155"
-                  ? 'ERC-1155'
-                  : 'ERC-721'
-                )
-                : "--"}
+              {nftType}
             </p>
           </div>
           <h2 style={{
