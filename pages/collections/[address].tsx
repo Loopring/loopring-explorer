@@ -89,7 +89,7 @@ const NFTCollection: React.FC<{}> = () => {
   const [searchInput, setSearchInput] = useState('')
   const [feedSearchInput, setFeedSearchInput] = useState('')
   const { data, loading, fetchMore, refetch } = useNonFungibleTokensQuery({
-    fetchPolicy: 'no-cache',
+    fetchPolicy: 'cache-and-network',
     // skip: !router.query.address,
     variables: {
       where: {
