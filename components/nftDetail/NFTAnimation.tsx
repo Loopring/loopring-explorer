@@ -65,6 +65,8 @@ const NFTAnimation: React.FC<{ animationURL: string; animationType: string; imag
         />
       </>
     );
+  } else if (animationType?.startsWith('image/webp')) {
+    return <FallBackImg fallBackSrc={fallBackImage} src={animationURL as string} />;
   } else {
     return <FallBackImg fallBackSrc={fallBackImage} src={image as string} />;
   }
