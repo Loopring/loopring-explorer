@@ -3,7 +3,7 @@ import { useBlockQuery, useNonFungibleTokensQuery, useTransactionQuery } from '.
 import useAccounts from './useAccounts';
 
 const useSearch = (query: string) => {
-  const trimedQuery = query.trim()
+  const trimedQuery = query?.trim()
   const { data: blockData, loading: blockIsLoading } = useBlockQuery({
     variables: {
       id: trimedQuery,
