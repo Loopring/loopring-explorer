@@ -41,8 +41,9 @@ const getCollectionName = async (address)=> {
     return {
       name: res.name as string, 
       avatar: res.avatar as string,
-      banner: res.tileUri as string,
+      banner: res.banner as string,
       nftType: res.nftType as string,
+      description: res.description as string
     }
   } catch (error) {
     return {};
@@ -70,7 +71,7 @@ const NFTCollection: React.FC<{}> = () => {
   const SUMMARY = 100;
   const [minters, setMinters] = React.useState([]);
   const [name, setName] = React.useState<string>();
-  const [metadata, setMetadata] = React.useState<{ avatar?: string, banner?: string, nftType: string } | undefined>(undefined);
+  const [metadata, setMetadata] = React.useState<{ avatar?: string, banner?: string, nftType: string, description?: string } | undefined>(undefined);
   React.useEffect(() => {
     (async () => {
       const mintersList = await getMinters(router.query.address);
@@ -82,6 +83,7 @@ const NFTCollection: React.FC<{}> = () => {
           avatar: response.avatar ? response.avatar.replace('ipfs://', IPFS_URL) : undefined,
           banner: response.banner ? response.banner.replace('ipfs://', IPFS_URL) : undefined,
           nftType: response.nftType ? response.nftType : undefined,
+          description: response.description
         });
       }
     })();
@@ -184,9 +186,9 @@ const NFTCollection: React.FC<{}> = () => {
           }}/>}
           {/* <img style={{ width: "100%" }} src={firstMetadata?.imageUrl ?? ""} /> */}
           <div style={{ display: "flex", justifyContent: "space-between", color: "white", background: "#29293F" }}>
-            <div style={{ display: "flex" }}>
+            <div style={{ display: "flex", width: 'calc(100% - 100px)' }}>
               {metadata?.avatar && <img style={{ borderRadius: "10px", marginLeft: "30px", marginBottom: "30px", marginTop: "-30px", width: "200px", height: "200px" }} src={metadata.avatar} />}
-              <div style={{ marginTop: "20px", marginLeft: "20px", }}>
+              <div style={{ marginTop: "20px", marginLeft: "20px" }}>
                 <p>{name || "--"}</p>
                 <p>
                   <span>{getTrimmedTxHash(router.query.address as string, 14, true)} </span>
@@ -205,13 +207,14 @@ const NFTCollection: React.FC<{}> = () => {
                     }}
                   />
                 </p>
-                <p style={{marginBottom: '24px'}}>
+                <p style={{marginBottom: '12px'}}>
                   Item:
                   <span>{totalCount}</span>
                 </p>
+                {metadata.description && <p style={{color: 'lightgray', marginBottom: '24px', fontSize: '13px'}}>Description: {metadata.description}</p>}
               </div>
             </div>
-            <p style={{ marginTop: "20px", marginRight: "20px" }}>
+            <p style={{ width: '100px', marginTop: "20px", marginRight: "20px" }}>
               {nftType}
             </p>
           </div>
