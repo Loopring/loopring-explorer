@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { ethers } from 'ethers';
 
 import { INFURA_ENDPOINT } from '../utils/config';
@@ -59,8 +60,11 @@ const getERC1155URI = async (nft, isFailOver = false) => {
 
     const nftContract = new ethers.Contract(nft.token, contractABIERC1155, provider);
 
-    const uri = await nftContract.uri(nft.nftID);
-    return uri;
+    const nftIDDecimal = parseInt(nft.nftID, 16).toString(); // Convert hexadecimal to decimal and then to a string
+
+    const uri = await nftContract.uri(nftIDDecimal);
+
+    return uri.replace('{id}', nftIDDecimal);
   } catch (error) {
     console.error(error);
     if (!isFailOver) {
@@ -90,7 +94,6 @@ const getNFTURI = async (nft) => {
 };
 
 const getNFTMetadata = async (uri, nft, isErrorFallback = false) => {
-  
   const cacheKey = nft.id;
   let cacheResult = metadataCache.get(cacheKey);
   if (cacheResult) {
@@ -104,17 +107,14 @@ const getNFTMetadata = async (uri, nft, isErrorFallback = false) => {
       };
     }
     try {
-      
       const metadata = await fetch(uri.replace('ipfs://', IPFS_URL))
-      .catch(() => {
-        
-        return fetch(uri.replace('ipfs://', FALLBACK_IPFS_URL))
-      })
-      .then((res) => res.json());
+        .catch(() => {
+          return fetch(uri.replace('ipfs://', FALLBACK_IPFS_URL));
+        })
+        .then((res) => res.json());
       metadataCache.set(cacheKey, metadata);
       return metadata;
     } catch (error) {
-      
       if (!isErrorFallback) {
         return getNFTMetadata(`${uri}/metadata.json`, nft, true);
       }
