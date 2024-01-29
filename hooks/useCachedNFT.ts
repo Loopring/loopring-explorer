@@ -59,11 +59,9 @@ const getERC1155URI = async (nft, isFailOver = false) => {
 
     const nftContract = new ethers.Contract(nft.token, contractABIERC1155, provider);
 
-    const nftIDDecimal = parseInt(nft.nftID, 16).toString(); // Convert hexadecimal to decimal and then to a string
+    const uri = await nftContract.uri(nft.nftID);
 
-    const uri = await nftContract.uri(nftIDDecimal);
-
-    return uri.replace('{id}', nftIDDecimal);
+    return uri.replace('{id}', nft.nftID);
   } catch (error) {
     console.error(error);
     if (!isFailOver) {
