@@ -104,6 +104,7 @@ const getNFTMetadata = async (uri, nft, isErrorFallback = false) => {
       };
     }
     try {
+      
       const metadata = await fetch(uri.replace('ipfs://', IPFS_URL))
       .catch(() => {
         
@@ -113,6 +114,7 @@ const getNFTMetadata = async (uri, nft, isErrorFallback = false) => {
       metadataCache.set(cacheKey, metadata);
       return metadata;
     } catch (error) {
+      
       if (!isErrorFallback) {
         return getNFTMetadata(`${uri}/metadata.json`, nft, true);
       }
