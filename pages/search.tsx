@@ -11,7 +11,7 @@ const Search: React.FC<{}> = () => {
 
   React.useEffect(() => {
     if (loaded && results.length > 0) {
-      if (results.length === 1 || results.length === 2) {
+      if (results.length === 1) {
         router.replace(results[0].link);
       }
     }

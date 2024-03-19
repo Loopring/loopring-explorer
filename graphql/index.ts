@@ -1,8 +1,21 @@
-import { ApolloClient, InMemoryCache, HttpLink, split } from '@apollo/client';
+import { ApolloClient, InMemoryCache, HttpLink, split, ApolloLink } from '@apollo/client';
 import { LOOPRING_SUBGRAPH, UNISWAP_SUBGRAPH } from '../utils/config';
 
 const loopringLink = new HttpLink({
-  uri: LOOPRING_SUBGRAPH,
+  uri: LOOPRING_SUBGRAPH
+});
+
+const mapBody = new ApolloLink((operation, forward) => {
+  return forward(operation).map(response => {
+    return {
+      ...response,
+      data: {
+        ...response.data,
+        // @ts-ignore
+        ...JSON.parse(response.data).data 
+      }
+    }
+  });
 });
 
 const uniswapLink = new HttpLink({
@@ -10,7 +23,7 @@ const uniswapLink = new HttpLink({
 });
 
 const client = new ApolloClient({
-  link: split((op) => op.getContext().protocol === 'uniswap', uniswapLink, loopringLink),
+  link: split((op) => op.getContext().protocol === 'uniswap', uniswapLink, mapBody.concat(loopringLink)),
   cache: new InMemoryCache({
     typePolicies: {
       Query: {

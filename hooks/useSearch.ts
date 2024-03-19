@@ -3,23 +3,24 @@ import { useBlockQuery, useNonFungibleTokensQuery, useTransactionQuery } from '.
 import useAccounts from './useAccounts';
 
 const useSearch = (query: string) => {
+  const trimedQuery = query?.trim()
   const { data: blockData, loading: blockIsLoading } = useBlockQuery({
     variables: {
-      id: query,
+      id: trimedQuery,
     },
   });
   const { data: txData, loading: txIsLoading } = useTransactionQuery({
     variables: {
-      id: query,
+      id: trimedQuery,
     },
   });
-  const { data: accountData, isLoading: accountIsLoading } = useAccounts(query);
+  const { data: accountData, isLoading: accountIsLoading } = useAccounts(trimedQuery);
 
   const { data: NFTCollectionData, loading: NFTCollectionLoading } = useNonFungibleTokensQuery({
     fetchPolicy: 'no-cache',
     variables: {
       where: {
-        token_in: [query, query ? query.toLowerCase() : ""]
+        token_in: [trimedQuery, trimedQuery ? trimedQuery.toLowerCase() : ""]
       },
       first: 1,
     },
@@ -32,7 +33,7 @@ const useSearch = (query: string) => {
   React.useEffect(() => {
     setResultLoaded(false);
     setResults([]);
-  }, [query]);
+  }, [trimedQuery]);
   console.log('results', results)
 
   React.useEffect(() => {
@@ -72,7 +73,7 @@ const useSearch = (query: string) => {
       setResults(allResults);
       setResultLoaded(true);
     }
-  }, [blockIsLoading, blockData, txIsLoading, txData, accountIsLoading, accountData, NFTCollectionData, NFTCollectionLoading, query]);
+  }, [blockIsLoading, blockData, txIsLoading, txData, accountIsLoading, accountData, NFTCollectionData, NFTCollectionLoading, trimedQuery]);
 
   return {
     loaded: resultLoaded,
