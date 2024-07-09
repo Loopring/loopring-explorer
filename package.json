@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "run-p codegen:watch dev:next",
     "dev:next": "TAILWIND_MODE=watch next dev",
-    "build": "run-p codegen build:next",
+    "build": "run-p build:next",
     "build:next": "next build",
     "start": "next start",
     "export": "next export",
