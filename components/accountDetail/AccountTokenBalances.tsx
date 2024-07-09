@@ -7,6 +7,7 @@ import useTokens from '../../hooks/useTokens';
 import { useTokenPricesInUSD } from '../../hooks/useTokenPrices';
 import { utils } from 'ethers';
 import { numberFormat } from '../../utils/numberFormat';
+import { gql, useQuery } from '@apollo/client';
 
 interface Props {
   accountId: string;
@@ -27,6 +28,25 @@ const AccountTokenBalances: React.FC<Props> = ({ accountId }) => {
   });
 
   const {prices} = useTokenPricesInUSD()
+
+  const { data: totalData } = useQuery(
+    gql`
+      query accountTokenBalances($address: String) {
+        accountTokenBalances(orderBy: id, first: 99, where: {account: "${accountId}"}) {
+          id
+          balance
+          token {
+            id
+            name
+            symbol
+            decimals
+            address
+          }
+        }
+      }
+    `,
+    { fetchPolicy: 'no-cache' }
+  );
 
   if (loading || isLoading) {
     return null;
@@ -64,8 +84,8 @@ const AccountTokenBalances: React.FC<Props> = ({ accountId }) => {
       }
     });
   
-  const totalInUSD = prices
-    ? data.accountTokenBalances.reduce((acc, cur) => {
+  const totalInUSD = totalData && prices
+    ? totalData.accountTokenBalances.reduce((acc, cur) => {
         const tokenPrice = prices.find((price) => price.tokenAddr === cur.token.address)?.priceInUSD ?? '0';
         const balance = utils.formatUnits(cur.balance, cur.token.decimals);
         return Number(tokenPrice) * Number(balance) + acc;
