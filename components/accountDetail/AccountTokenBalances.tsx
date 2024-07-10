@@ -4,6 +4,10 @@ import getTokenAmount from '../../utils/getTokenAmount';
 import { OrderDirection, useAccountTokenBalancesQuery } from '../../generated/loopringExplorer';
 import CursorPagination from '../CursorPagination';
 import useTokens from '../../hooks/useTokens';
+import { useTokenPricesInUSD } from '../../hooks/useTokenPrices';
+import { utils } from 'ethers';
+import { numberFormat } from '../../utils/numberFormat';
+import { gql, useQuery } from '@apollo/client';
 
 interface Props {
   accountId: string;
@@ -22,6 +26,27 @@ const AccountTokenBalances: React.FC<Props> = ({ accountId }) => {
     },
     fetchPolicy: 'cache-and-network',
   });
+
+  const {prices} = useTokenPricesInUSD()
+
+  const { data: totalData } = useQuery(
+    gql`
+      query accountTokenBalances($address: String) {
+        accountTokenBalances(orderBy: id, first: 99, where: {account: "${accountId}"}) {
+          id
+          balance
+          token {
+            id
+            name
+            symbol
+            decimals
+            address
+          }
+        }
+      }
+    `,
+    { fetchPolicy: 'no-cache' }
+  );
 
   if (loading || isLoading) {
     return null;
@@ -58,6 +83,14 @@ const AccountTokenBalances: React.FC<Props> = ({ accountId }) => {
         }
       }
     });
+  
+  const totalInUSD = totalData && prices
+    ? totalData.accountTokenBalances.reduce((acc, cur) => {
+        const tokenPrice = prices.find((price) => price.tokenAddr === cur.token.address)?.priceInUSD ?? '0';
+        const balance = utils.formatUnits(cur.balance, cur.token.decimals);
+        return Number(tokenPrice) * Number(balance) + acc;
+      }, 0)
+    : undefined;
 
   return (
     <div>
@@ -67,6 +100,7 @@ const AccountTokenBalances: React.FC<Props> = ({ accountId }) => {
         </div>
       ) : (
         <>
+          <p  style={{textAlign: 'left', visibility: totalInUSD ? 'visible' : 'hidden', marginBottom: '4px'}}>Value in USD: ${numberFormat(totalInUSD, {fixed: 2, thousandthPlace: true}) }</p>
           <table className="w-full table-auto table-fixed">
             <thead className="text-center bg-loopring-blue border border-loopring-blue dark:border-loopring-dark-darkBlue dark:bg-loopring-dark-darkBlue text-white">
               <tr>
