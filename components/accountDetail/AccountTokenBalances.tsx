@@ -86,7 +86,7 @@ const AccountTokenBalances: React.FC<Props> = ({ accountId }) => {
   
   const totalInUSD = totalData && prices
     ? totalData.accountTokenBalances.reduce((acc, cur) => {
-        const tokenPrice = prices.find((price) => price.tokenAddr === cur.token.address)?.priceInUSD ?? '0';
+        const tokenPrice = prices.find((price) => price.tokenAddr.toLowerCase() === cur.token.address.toLowerCase())?.priceInUSD ?? '0';
         const balance = utils.formatUnits(cur.balance, cur.token.decimals);
         return Number(tokenPrice) * Number(balance) + acc;
       }, 0)
