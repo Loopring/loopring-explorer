@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "run-p dev:next",
-    "dev:next": "TAILWIND_MODE=watch next dev",
+    "dev:next": "TAILWIND_MODE=watch next dev -p 3012",
     "build": "run-p build:next",
     "build:next": "next build",
     "start": "next start",

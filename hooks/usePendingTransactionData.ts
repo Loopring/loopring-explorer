@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { apiEndpointByTxType, LOOPRING_API } from '../utils/config';
+import { apiEndpointByTxType, EXPLORER_CONFIG } from '../utils/config';
 
 const getQueryParamName = (txType) => {
   switch (txType) {
@@ -21,7 +21,7 @@ const usePendingTransactionData = (txType, txHash) => {
   React.useEffect(() => {
     (async () => {
       try {
-        const endpoint = `${LOOPRING_API}${apiEndpointByTxType[txType]}?${getQueryParamName(
+        const endpoint = `${EXPLORER_CONFIG.LOOPRING_API}${apiEndpointByTxType[txType]}?${getQueryParamName(
           txType
         )}=${txHash}&accountId=0`;
         const res = await fetch(endpoint).then((res) => res.json());

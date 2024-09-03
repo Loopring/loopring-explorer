@@ -1,17 +1,32 @@
 import { BigNumber } from "ethers"
 import { dataByBlockIdAndIndex } from "loopring36-block-parser2";
-import { INFURA_ENDPOINT, LOOPRING_API } from "./config";
+import { INFURA_ENDPOINT, EXPLORER_CONFIG } from "./config";
+import { block } from "../graphql/fragments";
+import { time } from "console";
 
-export const getBlock = (blockId: number) => fetch(`${LOOPRING_API}block/getBlock?id=${blockId}`)
+export interface Block {
+  blockId: number;
+  blockSize: number;
+  exchange: string;
+  txHash: string;
+  status: string;
+  createdAt: number;
+  transactions: any[];
+}
+
+export const getBlock = (blockId: number): Promise<Block> => fetch(`${EXPLORER_CONFIG.LOOPRING_API}block/getBlock?id=${blockId}`)
   .then(x => x.json())
 
-export const getAccount = (accountId: number) => fetch(`${LOOPRING_API}account?accountId=${accountId}`)
+export const getLatestBlock = (): Promise<Block> => fetch(`${EXPLORER_CONFIG.LOOPRING_API}block/getBlock`)
   .then(x => x.json())
 
-export const getTokens = () => fetch(`${LOOPRING_API}exchange/tokens`)
+export const getAccount = (accountId: number) => fetch(`${EXPLORER_CONFIG.LOOPRING_API}account?accountId=${accountId}`)
   .then(x => x.json())
 
-export const getPools = () => fetch(`${LOOPRING_API}amm/pools`)
+export const getTokens = () => fetch(`${EXPLORER_CONFIG.LOOPRING_API}exchange/tokens`)
+  .then(x => x.json())
+
+export const getPools = () => fetch(`${EXPLORER_CONFIG.LOOPRING_API}amm/pools`)
   .then(x => x.json())  
 
 const convertTransactionData_Transfer = async (origin: any) => {
@@ -202,11 +217,6 @@ const convertTransactionData_Deposit = async (origin: any) => {
     }
   }
 }
-const publickeyDecimalToHex128 = (decimalPublicKey: string) => {
-  const hex = BigNumber.from(decimalPublicKey).toHexString().slice(2)
-  const n = 64 - hex.length
-  return '0'.repeat(n) + hex
-}
 const convertTransactionData_AccountUpdate = async (origin: any) => {
   const tokens = await getTokens()
   const feeTokenInfo = tokens.find(x => x.tokenId === origin.feeTokenID)
@@ -295,6 +305,7 @@ const convertTransactionData_AmmUpdate = async (origin: any) => {
   }
 }
 const convertTransactionData_Pre = (origin: any) => {
+  debugger
   return {
     ...origin,
     txData: origin.txData.slice(2),
@@ -347,3 +358,312 @@ export const getTransactionData = (blockId: number, index: number) => {
     throw e
   })
 }
+
+export const mapLoopringTransactionToGraphStructure = async (txs: any[], blockTimestamp: number) => {
+  const normalTokenList = await fetch(`${EXPLORER_CONFIG.LOOPRING_API}exchange/tokens`)
+    .then(x => x.json())
+    .then(list => list.map(token => {
+      return {
+        id: token.tokenId.toString(),
+        decimals: token.decimals,
+        symbol: token.symbol,
+        name: token.name,
+        address: token.address,
+      }
+    }))
+  const vaultTokenList = await fetch(`${EXPLORER_CONFIG.LOOPRING_API}vault/tokens`)
+    .then(x => x.json())
+    .then(list => list.map(token => {
+      return {
+        id: token.vaultTokenId.toString(),
+        decimals: token.decimals,
+        symbol: token.symbol,
+        name: token.name,
+        address: token.address,
+      }
+    }))
+  const tokenList = [...normalTokenList, ...vaultTokenList]
+    
+  const mapped = txs.map((tx, index) => {
+    debugger
+    const commonData = {
+      id: "No." + (index + 1),
+      internalID: "--",
+      validUntil: tx.validUntil,
+      block: {
+        timestamp: blockTimestamp,
+      }
+    };
+    switch (tx.txType) {
+      case "NftData": {
+        return {
+          __typename: "DataNFT",
+          ...commonData,
+        };
+      }
+      case "NftMint":
+        return {
+          amount: tx.nftToken.amount,
+          fee: tx.fee.amount,
+          feeToken: {
+            id: tx.fee.tokenId.toString(),
+            ...tokenList.find(
+              (t) => t.id === tx.fee.tokenId.toString()
+            ),
+          },
+          minter: {
+            id: tx.minterAccountId,
+          },
+          nft: {
+            id: tx.nftToken.nftId,
+          },
+          receiver: {
+            address: tx.toAccountAddress,
+            id: tx.toAccountId.toString(),
+          },
+          receiverSlot: {
+            id: `${tx.toAccountId}-${tx.toToken.tokenId}`,
+          },
+          __typename: "MintNFT",
+          ...commonData,
+        };
+      case "AmmUpdate": {
+        return {
+          account: {
+            id: tx.accountId,
+            address: tx.owner,
+          },
+          __typename: "AmmUpdate",
+          ...commonData,
+        };
+      }
+      case "SpotTrade": {
+        const { orderA, orderB } = tx;
+        const __typename = orderA.nftData
+          ? "TradeNFT"
+          : orderB.accountID < 10000
+          ? "Swap"
+          : "OrderbookTrade";
+        let obj;
+        if (__typename === "TradeNFT") {
+          return {
+            __typename,
+            accountBuyer: {
+              id: orderA.accountID.toString(),
+            },
+            accountIdA: orderA.accountID,
+            accountIdB: orderB.accountID,
+            accountSeller: {
+              id: orderB.accountID.toString(),
+            },
+            feeBuyer: BigNumber.from(orderA.amountS)
+              .mul(
+                BigNumber.from(orderB.feeBips.toString()).add(
+                  orderA.feeBips.toString()
+                )
+              )
+              .div("10000")
+              .toString(),
+            validUntil: tx.orderA.validUntil,
+            realizedNFTPrice: orderA.amountS,
+            token: {
+              __typename: "Token",
+              id: orderA.tokenS,
+              ...tokenList.find(
+                (x) => x.id === orderA.tokenS.toString()
+              ),
+            },
+            ...commonData,
+          };
+        }
+        if (__typename === "Swap") {
+          obj = {
+            account: {
+              id: orderA.accountID.toString(),
+            },
+            pool: {
+              id: orderB.accountID.toString(),
+            },
+          };
+        } else {
+          obj = {
+            accountA: {
+              id: orderA.accountID.toString(),
+            },
+            accountB: {
+              id: orderB.accountID.toString(),
+            },
+          };
+        }
+        return {
+          ...obj,
+          tokenA: {
+            id: orderA.tokenS.toString(),
+            ...tokenList.find(
+              (t) => t.id === orderA.tokenS.toString()
+            ),
+          },
+          tokenB: {
+            id: orderA.tokenB.toString(),
+            ...tokenList.find(
+              (t) => t.id === orderA.tokenB.toString()
+            ),
+          },
+          pair: {
+            id: `${orderA.tokenS}-${orderA.tokenB}`,
+            token0: {
+              symbol: tokenList.find(
+                (t) => t.id === orderA.tokenS.toString()
+              )?.symbol ?? '--',
+            },
+            token1: {
+              symbol: tokenList.find(
+                (t) => t.id === orderA.tokenB.toString()
+              )?.symbol ?? '--',
+            },
+          },
+          tokenAPrice: BigNumber.from(orderA.amountS)
+            .mul("1" + "0".repeat(18))
+            .div(orderA.amountB)
+            .toString(),
+          tokenBPrice: BigNumber.from(orderA.amountB)
+            .mul("1" + "0".repeat(18))
+            .div(orderA.amountS)
+            .toString(),
+          fillSA: orderA.amountS,
+          fillSB: orderA.amountB,
+          fillBA: orderA.amountB,
+          fillBB: orderA.amountS,
+          feeA: BigNumber.from(orderA.amountB)
+            .mul(orderA.feeBips)
+            .div("10000")
+            .toString(),
+          ...commonData,
+          __typename,
+          validUntil: tx.orderA.validUntil,
+        };
+      }
+      case "Transfer": {
+        const __typename = tx.token.nftData ? "TransferNFT" : "Transfer";
+        return {
+          fromAccount: tx.accountId
+            ? {
+                id: tx.accountId,
+              }
+            : undefined,
+          toAccount: {
+            id: tx.toAccountId,
+          },
+          feeToken: tx.fee
+            ? {
+                id: tx.fee.tokenId,
+                ...tokenList.find(
+                  (t) => t.id === tx.fee.tokenId.toString()
+                ),
+              }
+            : undefined,
+          token: tx.token
+            ? {
+                id: tx.token.tokenId,
+                ...tokenList.find(
+                  (t) => t.id === tx.token.tokenId.toString()
+                ),
+              }
+            : undefined,
+          toToken: tx.toToken
+            ? {
+                id: tx.toToken.tokenId,
+                ...tokenList.find(
+                  (t) => t.id === tx.toToken.tokenId.toString()
+                ),
+              }
+            : undefined,
+          amount: tx.token ? tx.token.amount : undefined,
+          fee: tx.fee ? tx.fee.amount : undefined,
+          __typename,
+          ...commonData,
+        };
+      }
+      case "Withdraw":
+        const __typename = tx.token.nftData ? "WithdrawalNFT" : "Withdrawal";
+        return {
+          fromAccount: {
+            id: tx.accountId,
+          },
+          toAddress: tx.toAddress,
+          withdrawalFeeToken: tx.fee
+            ? {
+                id: tx.fee.tokenId,
+                ...tokenList.find(
+                  (t) => t.id === tx.fee.tokenId.toString()
+                ),
+              }
+            : undefined,
+            withdrawalToken:
+            __typename === "Withdrawal"
+              ? {
+                  id: tx.token.tokenId,
+                  ...tokenList.find(
+                    (t) => t.id === tx.token.tokenId.toString()
+                  ),
+                }
+              : undefined,
+          withdrawalNFTFeeToken:
+            __typename === "WithdrawalNFT"
+              ? {
+                  id: tx.token.tokenId,
+                  ...tokenList.find(
+                    (t) => t.id === tx.token.tokenId.toString()
+                  ),
+                }
+              : undefined,
+          __typename,
+          amount: tx.token ? tx.token.amount : undefined,
+          fee: tx.fee ? tx.fee.amount : undefined,
+          ...commonData,
+        };
+      case "Deposit":
+        return {
+          fromAccount: tx.accountId
+            ? {
+                address: tx.fromAddress,
+              }
+            : undefined,
+          toAccount: {
+            id: tx.accountId,
+            address: tx.toAddress,
+          },
+          token: tx.token
+            ? {
+                id: tx.token.tokenId,
+                ...tokenList.find(
+                  (t) => t.id === tx.token.tokenId.toString()
+                ),
+              }
+            : undefined,
+          amount: tx.token ? tx.token.amount : undefined,
+          __typename: tx.txType,
+          ...commonData,
+      };
+      case "AccountUpdate": {
+        return {
+          user: {
+            id: tx.accountId,
+          },
+          feeToken: tx.fee
+            ? {
+                id: tx.fee.tokenId,
+                ...tokenList.find(
+                  (t) => t.id === tx.fee.tokenId.toString()
+                ),
+              }
+            : undefined,
+          fee: tx.fee ? tx.fee.amount : undefined,
+          __typename: tx.txType,
+          ...commonData,
+        };
+      }
+    }
+  }) as any[];
+  return mapped;
+};

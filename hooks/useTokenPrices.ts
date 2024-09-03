@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { LOOPRING_API } from '../utils/config';
+import { EXPLORER_CONFIG } from '../utils/config';
 
 export const useTokenPricesInUSD = () => {
   const [prices, setPrices] = useState<
@@ -9,7 +9,7 @@ export const useTokenPricesInUSD = () => {
     }[]
   >(undefined);
   useEffect(() => {
-    fetch(`${LOOPRING_API}datacenter/getLatestTokenPrices`)
+    fetch(`${EXPLORER_CONFIG.LOOPRING_API}datacenter/getLatestTokenPrices`)
       .then((res) => res.json())
       .then((json) => {
         setPrices(

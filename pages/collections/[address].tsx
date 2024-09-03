@@ -4,7 +4,7 @@ import { ethers } from 'ethers';
 
 import AppLink from '../../components/AppLink';
 import NFT from '../../components/NFT';
-import { INFURA_ENDPOINT, LOOPRING_API, loopringApiEndpoints } from '../../utils/config';
+import { INFURA_ENDPOINT, EXPLORER_CONFIG, loopringApiEndpoints } from '../../utils/config';
 import getTrimmedTxHash from '../../utils/getTrimmedTxHash';
 import { OrderDirection, useNonFungibleTokensQuery } from '../../generated/loopringExplorer';
 import CursorPagination from '../../components/CursorPagination';
@@ -36,7 +36,7 @@ const getCollectionName = async (address)=> {
     return null;
   }
   try {
-    const endpoint = `${LOOPRING_API}${loopringApiEndpoints.collection}?collectionAddress=${address}`;
+    const endpoint = `${EXPLORER_CONFIG.LOOPRING_API}${loopringApiEndpoints.collection}?collectionAddress=${address}`;
     const res = await fetch(endpoint).then((res) => res.json());
     return {
       name: res.name as string, 

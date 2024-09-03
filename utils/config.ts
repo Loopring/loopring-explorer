@@ -1,4 +1,7 @@
 // TODO: remove once env variables are added to vercel.
+// export const EXPLORER_NETWORK = 'ETHEREUM';
+export const EXPLORER_NETWORK = 'TAIKO';
+// export const EXPLORER_NETWORK = process.env.NEXT_PUBLIC_EXPLORER_NETWORK.toUpperCase() ?? 'ETHEREUM';
 export const LOOPRING_SUBGRAPH =
   process.env.NEXT_PUBLIC_SUBGRAPH_ENDPOINT ??
   'https://dev.loopring.io/api/v3/forwardRequest';
@@ -6,7 +9,6 @@ export const EXPLORER_URL = 'https://etherscan.io/';
 export const INFURA_ENDPOINT =
   process.env.NEXT_PUBLIC_INFURA_ENDPOINT ?? 'https://mainneteth.loopring.io';
 export const UNISWAP_SUBGRAPH = 'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v2';
-export const LOOPRING_API = 'https://api3.loopring.io/api/v3/';
 export const apiEndpointByTxType = {
   transfer: 'user/transactions',
   deposit: 'user/transactions',
@@ -24,10 +26,22 @@ export const apiEndpointByTxType = {
 export const loopringApiEndpoints = {
   collection: 'nft/public/collection'
 };
-
 export const NFT_DISALLOW_LIST = [];
-
 export enum USER_CONTENT {
   YES = 'yes',
   NO = 'no',
 }
+const EXPLORER_CONFIG_MAP = new Map([
+  ['ETHEREUM', {
+    SHOW_MAIN_PAGE_PARIS: true,
+    LOOPRING_API: 'https://api3.loopring.io/api/v3/',
+    SHOW_ID_FOR_USER_LINK: false,
+
+  }],
+  ['TAIKO', {
+    SHOW_MAIN_PAGE_PARIS: false,
+    LOOPRING_API: 'https://taiko.loopring.io/api/v3/',
+    SHOW_ID_FOR_USER_LINK: true,
+  }],
+])
+export const EXPLORER_CONFIG = EXPLORER_CONFIG_MAP.get(EXPLORER_NETWORK)

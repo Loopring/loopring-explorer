@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { LOOPRING_API } from '../utils/config';
+import { EXPLORER_CONFIG } from '../utils/config';
 
 let tokensCached;
 
@@ -11,7 +11,7 @@ const useTokens = () => {
     (async () => {
       if (!tokensCached) {
         try {
-          const res = await fetch(`${LOOPRING_API}exchange/tokens`).then((res) => res.json());
+          const res = await fetch(`${EXPLORER_CONFIG.LOOPRING_API}exchange/tokens`).then((res) => res.json());
           setTokens(res);
           tokensCached = res;
         } catch (error) {

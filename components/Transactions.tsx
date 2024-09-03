@@ -18,116 +18,48 @@ import {
 } from '../generated/loopringExplorer';
 import CursorPagination from './CursorPagination';
 
-const Transactions: React.FC<{
-  blockIDFilter?: string;
+interface Transaction {
+  id: string;
+  __typename: string;
+  block: {
+    timestamp: number;
+  };
+}
+
+interface TransactionsTableProps {
+  data: { transactions: Transaction[] } | undefined;
+  loading: boolean;
+  error: any;
+  isPaginated: boolean;
+  fetchMore: any;
+  ENTRIES_PER_PAGE: number;
+  account: string;
+  blockId: string | string[];
+  txType: string;
+  showFilters: boolean;
+  title: React.ReactNode;
+  submitHandler: React.FormEventHandler<HTMLFormElement>;
   accountIdFilter?: Array<string>;
-  title?: React.ReactNode;
-  isPaginated?: boolean;
-  totalCount?: number;
-  showFilters?: boolean;
-}> = ({
-  blockIDFilter,
+  blockIDFilter?: string;
+}
+
+export const TransactionsTable: React.FC<TransactionsTableProps> = ({
+  data,
+  loading,
+  error,
+  isPaginated,
+  fetchMore,
+  ENTRIES_PER_PAGE,
+  account,
+  blockId,
+  txType,
+  showFilters,
+  title,
+  submitHandler,
   accountIdFilter,
-  title = <h1 className="text-3xl font-bold mb-2 w-1/3">Latest Transactions</h1>,
-  isPaginated = true,
-  totalCount = 25,
-  showFilters = true,
+  blockIDFilter,
 }) => {
-  const router = useRouter();
-  const [blockId, setBlockId] = React.useState(router.query.block || blockIDFilter);
-
-  const [txType, setTxType] = React.useState((router.query.type as string) || 'all');
-
-  const account = accountIdFilter?.[0] ?? 'none';
-
-  const ENTRIES_PER_PAGE = accountIdFilter || blockIDFilter ? 10 : totalCount;
-  const variables: TransactionsQueryVariables = {
-    first: ENTRIES_PER_PAGE,
-    orderBy: Transaction_OrderBy.InternalId,
-    orderDirection: OrderDirection.Desc,
-  };
-
-  if (blockIDFilter) {
-    variables.where = {
-      ...variables.where,
-      block: blockIDFilter,
-    };
-  }
-  if (blockId) {
-    variables.where = {
-      ...variables.where,
-      block: blockId as string,
-    };
-  }
-  if (accountIdFilter) {
-    variables.where = {
-      ...variables.where,
-      accounts_contains: accountIdFilter,
-    };
-  }
-  if (txType && txType !== 'all') {
-    variables.where = {
-      ...variables.where,
-      typename: TransactionType[txType],
-    };
-  }
-
-  const { data, error, loading, fetchMore } = useTransactionsQuery({
-    variables,
-    fetchPolicy: 'cache-and-network',
-  });
-
-  React.useEffect(() => {
-    if (router.query && router.query.block) {
-      setBlockId(router.query.block);
-    } else if (!blockIDFilter) {
-      setBlockId(undefined);
-    }
-    if (router.query && router.query.type) {
-      setTxType(router.query.type as string);
-    }
-  }, [router.query]);
-
-  const submitHandler: React.FormEventHandler<HTMLFormElement> = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const { block, txType: txTypeInput } = event.currentTarget;
-
-    if (block) {
-      if (block.value !== '') {
-        router.push(
-          {
-            pathname: router.pathname,
-            query: { ...router.query, block: block.value },
-          },
-          undefined,
-          {
-            shallow: true,
-          }
-        );
-      } else {
-        const { block, ...restQuery } = router.query;
-        router.push({ pathname: router.pathname, query: { ...restQuery } }, undefined, {
-          shallow: true,
-        });
-      }
-    }
-
-    if (txTypeInput && txTypeInput.value !== txType) {
-      // if used on the block detail page
-      router.push(
-        {
-          pathname: router.pathname,
-          query: { ...router.query, type: txTypeInput.value },
-        },
-        undefined,
-        {
-          shallow: true,
-        }
-      );
-    }
-  };
-
-  const getTransactionType = (type) => {
+  const getTransactionType = (type: string) => {
     switch (type) {
       case 'Add':
         return 'Amm Join';
@@ -277,7 +209,6 @@ const Transactions: React.FC<{
                 fetchNext({
                   variables: {
                     where: {
-                      ...variables.where,
                       internalID_lt: afterCursor,
                     },
                   },
@@ -286,12 +217,9 @@ const Transactions: React.FC<{
               onPreviousClick={(fetchPrevious, beforeCursor) =>
                 fetchPrevious({
                   variables: {
-                    where: {
-                      ...variables.where,
-                      internalID_gt: beforeCursor,
-                    },
-                    orderDirection: OrderDirection.Asc,
+                    internalID_gt: beforeCursor,
                   },
+                  orderDirection: OrderDirection.Asc,
                   updateQuery(_, data) {
                     return {
                       transactions: data.fetchMoreResult.transactions.reverse(),
@@ -309,6 +237,134 @@ const Transactions: React.FC<{
         )}
       </div>
     </div>
+  );
+};
+
+interface TransactionsProps {
+  blockIDFilter?: string;
+  accountIdFilter?: Array<string>;
+  title?: React.ReactNode;
+  isPaginated?: boolean;
+  totalCount?: number;
+  showFilters?: boolean;
+}
+
+const Transactions: React.FC<TransactionsProps> = ({
+  blockIDFilter,
+  accountIdFilter,
+  title = <h1 className="text-3xl font-bold mb-2 w-1/3">Latest Transactions</h1>,
+  isPaginated = true,
+  totalCount = 25,
+  showFilters = true,
+}) => {
+  const router = useRouter();
+  const [blockId, setBlockId] = React.useState(router.query.block || blockIDFilter);
+  const [txType, setTxType] = React.useState((router.query.type as string) || 'all');
+  const account = accountIdFilter?.[0] ?? 'none';
+  const ENTRIES_PER_PAGE = accountIdFilter || blockIDFilter ? 10 : totalCount;
+
+  const variables: TransactionsQueryVariables = {
+    first: ENTRIES_PER_PAGE,
+    orderBy: Transaction_OrderBy.InternalId,
+    orderDirection: OrderDirection.Desc,
+  };
+
+  if (blockIDFilter) {
+    variables.where = {
+      ...variables.where,
+      block: blockIDFilter,
+    };
+  }
+  if (blockId) {
+    variables.where = {
+      ...variables.where,
+      block: blockId as string,
+    };
+  }
+  if (accountIdFilter) {
+    variables.where = {
+      ...variables.where,
+      accounts_contains: accountIdFilter,
+    };
+  }
+  if (txType && txType !== 'all') {
+    variables.where = {
+      ...variables.where,
+      typename: TransactionType[txType],
+    };
+  }
+
+  const { data, error, loading, fetchMore } = useTransactionsQuery({
+    variables,
+    fetchPolicy: 'cache-and-network',
+  });
+
+  React.useEffect(() => {
+    if (router.query && router.query.block) {
+      setBlockId(router.query.block);
+    } else if (!blockIDFilter) {
+      setBlockId(undefined);
+    }
+    if (router.query && router.query.type) {
+      setTxType(router.query.type as string);
+    }
+  }, [router.query]);
+
+  const submitHandler: React.FormEventHandler<HTMLFormElement> = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const { block, txType: txTypeInput } = event.currentTarget;
+
+    if (block) {
+      if (block.value !== '') {
+        router.push(
+          {
+            pathname: router.pathname,
+            query: { ...router.query, block: block.value },
+          },
+          undefined,
+          {
+            shallow: true,
+          }
+        );
+      } else {
+        const { block, ...restQuery } = router.query;
+        router.push({ pathname: router.pathname, query: { ...restQuery } }, undefined, {
+          shallow: true,
+        });
+      }
+    }
+
+    if (txTypeInput && txTypeInput.value !== txType) {
+      router.push(
+        {
+          pathname: router.pathname,
+          query: { ...router.query, type: txTypeInput.value },
+        },
+        undefined,
+        {
+          shallow: true,
+        }
+      );
+    }
+  };
+
+  return (
+    <TransactionsTable
+      data={data}
+      loading={loading}
+      error={error}
+      isPaginated={isPaginated}
+      fetchMore={fetchMore}
+      ENTRIES_PER_PAGE={ENTRIES_PER_PAGE}
+      account={account}
+      blockId={blockId}
+      txType={txType}
+      showFilters={showFilters}
+      title={title}
+      submitHandler={submitHandler}
+      accountIdFilter={accountIdFilter}
+      blockIDFilter={blockIDFilter}
+    />
   );
 };
 
