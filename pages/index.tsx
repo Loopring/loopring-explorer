@@ -235,5 +235,5 @@ const HomeEthereum = ({ networkStats }) => {
     </div>
   );
 };
-
+// @ts-ignore
 export default EXPLORER_NETWORK === 'ETHEREUM' ? HomeEthereum : HomeTaiko;
