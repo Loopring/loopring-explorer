@@ -17,6 +17,7 @@ import {
   useTransactionsQuery,
 } from '../generated/loopringExplorer';
 import CursorPagination from './CursorPagination';
+import { EXPLORER_CONFIG } from '../utils/config';
 
 interface Transaction {
   id: string;
@@ -168,9 +169,13 @@ export const TransactionsTable: React.FC<TransactionsTableProps> = ({
                 return (
                   <tr className="border dark:border-loopring-dark-background" key={tx.id}>
                     <td className="p-2 border-b dark:border-loopring-dark-darkBlue whitespace-nowrap dark:text-white">
-                      <AppLink path="transaction" tx={tx.id}>
-                        {tx.id}
-                      </AppLink>
+                      {EXPLORER_CONFIG.TX_LINK_DISABLED ? (
+                        <>{tx.id}</>
+                      ) : (
+                        <AppLink path="transaction" tx={tx.id}>
+                          {tx.id}
+                        </AppLink>
+                      )}
                     </td>
                     <td className="p-2 border-b dark:border-loopring-dark-darkBlue whitespace-nowrap dark:text-white">
                       {getTransactionType(tx.__typename)}

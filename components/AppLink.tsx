@@ -2,7 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 
-import { EXPLORER_URL } from '../utils/config';
+import { EXPLORER_CONFIG } from '../utils/config';
 
 interface NotTx {
   tx?: never;
@@ -89,7 +89,7 @@ const AppLink: React.FC<React.PropsWithChildren<Props>> = ({
   token,
   nftId,
   isExplorerLink = false,
-  explorerURL = EXPLORER_URL,
+  explorerURL = EXPLORER_CONFIG.L1_EXPLORER_URL,
   children,
   className,
   collection,
