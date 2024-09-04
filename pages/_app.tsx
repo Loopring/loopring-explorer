@@ -12,6 +12,7 @@ import DarkModeToggle from '../components/DarkModeToggle';
 import ConsentContextProvider from '../components/ConsentContextProvider';
 import apolloClient from '../graphql';
 import APISourceToggle from '../components/APISourceToggle';
+import { EXPLORER_CONFIG } from '../utils/config';
 
 const MyApp: React.FC<AppProps> = ({ Component, pageProps }) => {
   const router = useRouter();
@@ -120,7 +121,7 @@ const MyApp: React.FC<AppProps> = ({ Component, pageProps }) => {
                     Smart Wallet
                   </a>
                 </Link>
-                <APISourceToggle />
+                {EXPLORER_CONFIG.SHOW_API_SOURCE_TOGGLE && <APISourceToggle />} 
                 <button onClick={toggleDarkMode} className="self-start p-2 lg:p-0">
                   <DarkModeToggle isDarkModeOn={darkMode} />
                 </button>
@@ -131,7 +132,7 @@ const MyApp: React.FC<AppProps> = ({ Component, pageProps }) => {
             {isHomePage ? (
               <div className="px-10 py-8 bg-loopring-blue pb-20 dark:bg-loopring-dark-darkBlue">
                 <div className="lg:w-11/12 m-auto">
-                  <h1 className="text-4xl text-white">Loopring zkRollup Explorer</h1>
+                  <h1 className="text-4xl text-white">{EXPLORER_CONFIG.TITLE}</h1>
                   <SearchForm className="flex md:w-3/5 mt-4" />
                 </div>
               </div>

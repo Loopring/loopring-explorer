@@ -33,15 +33,16 @@ export enum USER_CONTENT {
 }
 const EXPLORER_CONFIG_MAP = new Map([
   ['ETHEREUM', {
-    SHOW_MAIN_PAGE_PARIS: true,
     LOOPRING_API: 'https://api3.loopring.io/api/v3/',
     SHOW_ID_FOR_USER_LINK: false,
-
+    SHOW_API_SOURCE_TOGGLE: true,
+    TITLE: 'Loopring zkRollup Explorer',
   }],
   ['TAIKO', {
-    SHOW_MAIN_PAGE_PARIS: false,
     LOOPRING_API: 'https://taiko.loopring.io/api/v3/',
     SHOW_ID_FOR_USER_LINK: true,
+    SHOW_API_SOURCE_TOGGLE: false,
+    TITLE: 'Loopring zkRollup Explorer (TAIKO)',
   }],
 ])
 export const EXPLORER_CONFIG = EXPLORER_CONFIG_MAP.get(EXPLORER_NETWORK)

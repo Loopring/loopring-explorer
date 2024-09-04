@@ -31,50 +31,6 @@ interface HomeContentProps {
   networkStats: NetworkStatsProps;
 }
 
-const HomeContent: React.FC<HomeContentProps> = ({ networkStats }) => {
-  return (
-    <div className="mt-10 w-11/12 m-auto">
-      <NetworkStats {...networkStats} />
-      <div className="w-full mt-8 flex flex-col justify-between">
-        <h2 className="text-2xl font-bold p-2 text-loopring-blue dark:text-loopring-dark-gray">Latest Blocks</h2>
-        <Blocks isPaginated={false} blocksCount={10} />
-        <Link href="/blocks">
-          <a className="bg-loopring-darkBlue dark:bg-loopring-dark-blue text-white text-center block rounded-lg py-2 px-6 w-2/3 lg:w-auto m-auto lg:mx-0 mt-5 lg:self-end">
-            View More Blocks
-          </a>
-        </Link>
-      </div>
-      <div className="w-full mt-8 flex flex-col justify-between">
-        <Transactions
-          title={
-            <h2 className="text-2xl font-bold p-2 text-loopring-blue dark:text-loopring-dark-gray">
-              Latest Transactions
-            </h2>
-          }
-          isPaginated={false}
-          totalCount={10}
-          showFilters={false}
-        />
-        <Link href="/transactions">
-          <a className="bg-loopring-darkBlue dark:bg-loopring-dark-blue text-white text-center block rounded-lg py-2 px-6 w-2/3 lg:w-auto m-auto lg:mx-0 mt-5 mb-6  lg:self-end">
-            View More Transactions
-          </a>
-        </Link>
-      </div>
-      {EXPLORER_CONFIG.SHOW_MAIN_PAGE_PARIS && (
-        <div className="w-full mt-8 flex flex-col justify-between">
-          <h2 className="text-2xl font-bold p-2 text-loopring-blue dark:text-loopring-dark-gray">Pairs</h2>
-          <Pairs isPaginated={false} />
-          <Link href="/pairs">
-            <a className="bg-loopring-darkBlue dark:bg-loopring-dark-blue text-white text-center block rounded-lg py-2 px-6 w-2/3 lg:w-auto m-auto lg:mx-0 mt-5 mb-6  lg:self-end">
-              View More Pairs
-            </a>
-          </Link>
-        </div>
-      )}
-    </div>
-  );
-};
 
 const HomeTaiko = () => {
   const [state, setState] = useState({
@@ -84,7 +40,7 @@ const HomeTaiko = () => {
   useEffect(() => {
     (async () => {
       const latestBlock = await getLatestBlock();
-      mapLoopringTransactionToGraphStructure(latestBlock.transactions, Math.floor(latestBlock.createdAt / 1000)).then((txs) => {
+      mapLoopringTransactionToGraphStructure(latestBlock.transactions, {timestamp: Math.floor(latestBlock.createdAt / 1000), blockNo: latestBlock.blockId}).then((txs) => {
         setState((state) => ({
           ...state,
           latestBlockTxs: txs,
@@ -165,23 +121,7 @@ const HomeTaiko = () => {
           txType={''}
           submitHandler={() => {}}
         />
-        <Link href="/transactions">
-          <a className="bg-loopring-darkBlue dark:bg-loopring-dark-blue text-white text-center block rounded-lg py-2 px-6 w-2/3 lg:w-auto m-auto lg:mx-0 mt-5 mb-6  lg:self-end">
-            View More Transactions
-          </a>
-        </Link>
       </div>
-      {EXPLORER_CONFIG.SHOW_MAIN_PAGE_PARIS && (
-        <div className="w-full mt-8 flex flex-col justify-between">
-          <h2 className="text-2xl font-bold p-2 text-loopring-blue dark:text-loopring-dark-gray">Pairs</h2>
-          <Pairs isPaginated={false} />
-          <Link href="/pairs">
-            <a className="bg-loopring-darkBlue dark:bg-loopring-dark-blue text-white text-center block rounded-lg py-2 px-6 w-2/3 lg:w-auto m-auto lg:mx-0 mt-5 mb-6  lg:self-end">
-              View More Pairs
-            </a>
-          </Link>
-        </div>
-      )}
     </div>
   );
 };
@@ -221,17 +161,15 @@ const HomeEthereum = ({ networkStats }) => {
           </a>
         </Link>
       </div>
-      {EXPLORER_CONFIG.SHOW_MAIN_PAGE_PARIS && (
-        <div className="w-full mt-8 flex flex-col justify-between">
-          <h2 className="text-2xl font-bold p-2 text-loopring-blue dark:text-loopring-dark-gray">Pairs</h2>
-          <Pairs isPaginated={false} />
-          <Link href="/pairs">
-            <a className="bg-loopring-darkBlue dark:bg-loopring-dark-blue text-white text-center block rounded-lg py-2 px-6 w-2/3 lg:w-auto m-auto lg:mx-0 mt-5 mb-6  lg:self-end">
-              View More Pairs
-            </a>
-          </Link>
-        </div>
-      )}
+      <div className="w-full mt-8 flex flex-col justify-between">
+        <h2 className="text-2xl font-bold p-2 text-loopring-blue dark:text-loopring-dark-gray">Pairs</h2>
+        <Pairs isPaginated={false} />
+        <Link href="/pairs">
+          <a className="bg-loopring-darkBlue dark:bg-loopring-dark-blue text-white text-center block rounded-lg py-2 px-6 w-2/3 lg:w-auto m-auto lg:mx-0 mt-5 mb-6  lg:self-end">
+            View More Pairs
+          </a>
+        </Link>
+      </div>
     </div>
   );
 };
