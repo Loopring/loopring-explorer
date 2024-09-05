@@ -1,6 +1,8 @@
 import React from 'react';
 import { useBlockQuery, useNonFungibleTokensQuery, useTransactionQuery } from '../generated/loopringExplorer';
 import useAccounts from './useAccounts';
+import { getBlock } from '../utils/transaction';
+import { getLayer2Account, getLayer2AccountWithAddress } from '../utils/accountAPI';
 
 const useSearch = (query: string) => {
   const trimedQuery = query?.trim()
@@ -75,6 +77,74 @@ const useSearch = (query: string) => {
     }
   }, [blockIsLoading, blockData, txIsLoading, txData, accountIsLoading, accountData, NFTCollectionData, NFTCollectionLoading, trimedQuery]);
 
+  return {
+    loaded: resultLoaded,
+    results,
+  };
+};
+
+export const useSearchTaiko = (query: string) => {
+  const trimedQuery = query?.trim()
+
+  const [resultLoaded, setResultLoaded] = React.useState(false);
+
+  const [results, setResults] = React.useState([]);
+
+  React.useEffect(() => {
+    setResultLoaded(false);
+    setResults([]);
+
+    (async () => {
+      if (trimedQuery.startsWith('0x')) {
+        var account = await getLayer2AccountWithAddress(trimedQuery);
+      } else if (!isNaN(Number(trimedQuery))) {
+        account = await getLayer2Account(Number(trimedQuery));
+      } else {
+        account = undefined;
+      }
+      const accountData = (account && account.accountId) ? { 
+        id: account.accountId,
+        address: account.owner,
+        createdAtTransaction: {
+          id: '',
+          block: {
+            timestamp: undefined
+          }
+        },
+        link: 'account/' + account.accountId
+      } : undefined
+
+      if (!isNaN(Number(trimedQuery))) {
+        var block = await getBlock(Number(trimedQuery));
+      } else {
+        block = undefined
+      } 
+      const blockData = (block && block.txHash) ? { 
+        proxy: {
+          blockCount: block.transactions.length,
+        },
+        block: {
+          blockHash: undefined,
+          blockSize: block.transactions.length,
+          txHash: block.txHash,
+          timestamp: Math.floor(block.createdAt/1000),
+          operatorAccount: {
+            id: undefined,
+            address: undefined,
+          },
+          data: '',
+          transactions: []
+        },
+        link: 'block/' + trimedQuery
+      } : undefined
+      setResultLoaded(true)
+      setResults([accountData, blockData].filter(data => data !== undefined))
+      
+    })();
+
+  }, [trimedQuery]);
+
+  
   return {
     loaded: resultLoaded,
     results,

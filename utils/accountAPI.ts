@@ -15,6 +15,9 @@ interface Account {
 export const getLayer2Account = (accountId: number): Promise<Account> =>
   fetch(`${EXPLORER_CONFIG.LOOPRING_API}account?accountId=${accountId}`).then((x) => x.json());
 
+export const getLayer2AccountWithAddress = (address: string): Promise<Account> =>
+  fetch(`${EXPLORER_CONFIG.LOOPRING_API}account?owner=${address}`).then((x) => x.json());
+
 interface AccountBalance {
   accountId: number;
   tokenId: number;

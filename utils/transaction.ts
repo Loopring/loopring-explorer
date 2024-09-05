@@ -23,6 +23,9 @@ export const getLatestBlock = (): Promise<Block> => fetch(`${EXPLORER_CONFIG.LOO
 export const getAccount = (accountId: number) => fetch(`${EXPLORER_CONFIG.LOOPRING_API}account?accountId=${accountId}`)
   .then(x => x.json())
 
+export const getAccountWithAddress = (address: string) => fetch(`${EXPLORER_CONFIG.LOOPRING_API}account?owner=${address}`)
+  .then(x => x.json())
+
 export const getTokens = () => fetch(`${EXPLORER_CONFIG.LOOPRING_API}exchange/tokens`)
   .then(x => x.json())
 

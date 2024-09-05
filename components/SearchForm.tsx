@@ -1,5 +1,6 @@
 import React from "react";
 import { useRouter } from "next/router";
+import { EXPLORER_CONFIG } from "../utils/config";
 
 const SearchForm: React.FC<{ className?: string }> = ({ className }) => {
   const router = useRouter();
@@ -32,7 +33,7 @@ const SearchForm: React.FC<{ className?: string }> = ({ className }) => {
         type="text"
         name="query"
         className="h-10 w-full lg:w-auto flex-1 rounded-xl px-3 py-3 lg:py-0 placeholder-loopring-lightBlue placeholder-opacity-70"
-        placeholder="Search for block, tx, account ID, Collection Address"
+        placeholder={EXPLORER_CONFIG.SEARCH_PLACEHOLDER}
         onFocus={() => router.prefetch("/search")}
       />
       <button
