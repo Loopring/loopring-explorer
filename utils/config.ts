@@ -41,7 +41,8 @@ const EXPLORER_CONFIG_MAP = new Map([
     L1_EXPLORER_URL: 'https://etherscan.io/',
     SHOW_ACCOUNT_NFTS: true,
     SHOW_ACCOUNT_TXS: true,
-    SEARCH_PLACEHOLDER: 'Search for block, tx, account ID, Collection Address'
+    SEARCH_PLACEHOLDER: 'Search for block, tx, account ID, Collection Address',
+    TOTAL_ACCOUNTS_WORDING: 'Total L2 Accounts'
   }],
   ['TAIKO', {
     LOOPRING_API: 'https://taiko.loopring.io/api/v3/',
@@ -52,7 +53,8 @@ const EXPLORER_CONFIG_MAP = new Map([
     L1_EXPLORER_URL: 'https://taikoscan.io/',
     SHOW_ACCOUNT_NFTS: false,
     SHOW_ACCOUNT_TXS: false,
-    SEARCH_PLACEHOLDER: 'Search for block, account ID'
+    SEARCH_PLACEHOLDER: 'Search for block, account ID',
+    TOTAL_ACCOUNTS_WORDING: 'Total L3 Accounts'
   }],
 ])
 export const EXPLORER_CONFIG = EXPLORER_CONFIG_MAP.get(EXPLORER_NETWORK)
