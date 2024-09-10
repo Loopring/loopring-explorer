@@ -216,6 +216,7 @@ const AccountTokenBalances: React.FC<Props> = ({ accountId }) => {
   return (
     <AccountTokenBalancesView
       accountId={accountId}
+      // @ts-ignore
       accountTokenBalancesWithSymbol={accountTokenBalancesWithSymbol}
       totalInUSD={totalInUSD}
       fetchMore={fetchMore}

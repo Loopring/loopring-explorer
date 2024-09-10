@@ -145,10 +145,7 @@ const BlockTaiko: React.FC<{}> = () => {
       if (blockIdInt) {
         setState(undefined);
         const block = await getBlock(blockIdInt);
-        const txs = await mapLoopringTransactionToGraphStructure(block.transactions, {
-          timestamp: Math.floor(block.createdAt / 1000),
-          blockNo: block.blockId,
-        });
+        const txs = await mapLoopringTransactionToGraphStructure(block.transactions);
 
         setState({
           proxy: {
