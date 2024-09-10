@@ -361,8 +361,8 @@ export const getTransactionData = (blockId: number, index: number) => {
   })
 }
 
-export const mapLoopringTransactionToGraphStructure = async (txs: any[], block: {timestamp: number, blockNo: number}) => {
-  const blockTimestamp = block.timestamp
+export const mapLoopringTransactionToGraphStructure = async (txs: any[]) => {
+  // const blockTimestamp = block.timestamp
   const normalTokenList = await fetch(`${EXPLORER_CONFIG.LOOPRING_API}exchange/tokens`)
     .then(x => x.json())
     .then(list => list.map(token => {
@@ -388,12 +388,14 @@ export const mapLoopringTransactionToGraphStructure = async (txs: any[], block: 
   const tokenList = [...normalTokenList, ...vaultTokenList]
     
   const mapped = txs.map((tx, index) => {
+    // timestamp: Math.floor(block.createdAt / 1000),
+    // blockNo: block.blockId,
     const commonData = {
-      id: block.blockNo + "-" + index,
+      id: tx.blockNo + "-" + tx.blockIndex,
       internalID:  "--",
       validUntil: tx.validUntil,
       block: {
-        timestamp: blockTimestamp,
+        timestamp: tx.timestamp,
       }
     };
     switch (tx.txType) {

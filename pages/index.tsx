@@ -40,22 +40,32 @@ const HomeTaiko = () => {
   useEffect(() => {
     (async () => {
       const latestBlock = await getLatestBlock();
-      mapLoopringTransactionToGraphStructure(latestBlock.transactions, {timestamp: Math.floor(latestBlock.createdAt / 1000), blockNo: latestBlock.blockId}).then((txs) => {
-        setState((state) => ({
-          ...state,
-          latestBlockTxs: txs,
-        }));
-      });
       Promise.all(
         range(latestBlock.blockId - 10, latestBlock.blockId).map((blockId) => {
           return getBlock(blockId);
         })
       ).then((blocks) => {
         const sorted = sortBy(blocks.concat(latestBlock), (block) => block.blockId).reverse();
+        
         setState((state) => ({
           ...state,
           blocks: sorted,
         }));
+
+        mapLoopringTransactionToGraphStructure(sorted.flatMap((block) => block.transactions.map((tx, index) => {
+          return {
+            ...tx,
+            timestamp: Math.floor(block.createdAt / 1000),
+            blockNo: block.blockId,
+            blockIndex: index,
+          }
+        })).slice(0, 10)).then((txs) => {
+          setState((state) => ({
+            ...state,
+            latestBlockTxs: txs,
+          }));
+        });
+        
       });
     })();
   }, []);
@@ -102,7 +112,7 @@ const HomeTaiko = () => {
           TOTAL_COUNT={10}
         />
       </div>
-      <div className="w-full mt-8 flex flex-col justify-between">
+      <div className="w-full mt-8 pb-8 flex flex-col justify-between" >
         <TransactionsTable
           data={state.latestBlockTxs ? {transactions: state.latestBlockTxs} : {transactions: []}}
           loading={state.latestBlockTxs === undefined || state.blocks.length === 0}
