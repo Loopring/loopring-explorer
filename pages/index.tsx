@@ -84,7 +84,7 @@ const HomeTaiko = () => {
             transactionCount: block.transactions.length.toString(),
           })),
           proxy: {
-            blockCount: state.blocks[0].blockId,
+            blockCount: state.blocks.reverse()[0].blockId,
             transactionCount: undefined,
             userCount: undefined,
           },
