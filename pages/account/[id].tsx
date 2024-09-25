@@ -200,7 +200,7 @@ const AccountTaiko: React.FC<{}> = () => {
   }, [id]);
   return (
     <AccountDetails
-      accountId="1"
+      accountId={id}
       address={state?.address ?? ''}
       createdAtTransaction={undefined}
       __typename={undefined}

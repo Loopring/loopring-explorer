@@ -391,7 +391,7 @@ export const mapLoopringTransactionToGraphStructure = async (txs: any[]) => {
     // timestamp: Math.floor(block.createdAt / 1000),
     // blockNo: block.blockId,
     const commonData = {
-      id: tx.blockNo + "-" + tx.blockIndex,
+      id: tx.blockNo + "-" + index,
       internalID:  "--",
       validUntil: tx.validUntil,
       block: {
