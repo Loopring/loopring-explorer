@@ -102,7 +102,7 @@ const HomeTaiko = () => {
             return {
               id: block.blockId.toString(),
               txHash: block.txHash,
-              blockSize: block.transactions.length,
+              blockSize: block.blockSize,
               timestamp: Math.floor(block.createdAt / 1000),
             }
           }) ?? []}

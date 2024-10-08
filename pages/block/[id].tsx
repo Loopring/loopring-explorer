@@ -160,7 +160,7 @@ const BlockTaiko: React.FC<{}> = () => {
           },
           block: {
             blockHash: undefined,
-            blockSize: block.transactions.length,
+            blockSize: block.blockSize,
             txHash: block.txHash,
             timestamp: Math.floor(block.createdAt / 1000),
             operatorAccount: {
@@ -175,7 +175,7 @@ const BlockTaiko: React.FC<{}> = () => {
     })();
   }, [blockId]);
 
-  const blockCount = state?.proxy.blockCount;
+  const blockCount = state?.block.blockSize;
   const data = state;
   const loading = state === undefined;
 
@@ -200,7 +200,7 @@ const BlockTaiko: React.FC<{}> = () => {
             <tbody>
               <tr className="border dark:border-loopring-dark-darkBlue">
                 <td className="p-2 lg:w-1/5">Block Hash</td>
-                <td className="break-all">{data.block.blockHash}</td>
+                <td className="break-all">{data.block.blockHash ?? '--'}</td>
               </tr>
               <tr className="border dark:border-loopring-dark-darkBlue">
                 <td className="p-2">Block Size</td>
@@ -225,7 +225,7 @@ const BlockTaiko: React.FC<{}> = () => {
                 <td className="p-2">Operator Address</td>
                 <td className="break-all">
                   <AppLink path="account" accountId={data.block.operatorAccount.id}>
-                    <span className="hidden lg:block">{data.block.operatorAccount.address}</span>
+                    <span className="hidden lg:block">{data.block.operatorAccount.id ? data.block.operatorAccount.id : '--'}</span>
                     <span className="lg:hidden">
                       {data.block.operatorAccount.address
                         ? getTrimmedTxHash(data.block.operatorAccount.address, 10, true)
@@ -238,7 +238,7 @@ const BlockTaiko: React.FC<{}> = () => {
                 <td className="p-2">Raw Data</td>
                 <td>
                   <div className="break-all bg-gray-100 dark:bg-loopring-dark-darkBlue h-32 overflow-auto m-2 rounded p-2 text-gray-500">
-                    {data.block.data}
+                    {data.block.data ? data.block.data : '--'}
                   </div>
                 </td>
               </tr>
