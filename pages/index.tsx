@@ -12,7 +12,7 @@ import NetworkStats, { NetworkStatsProps } from '../components/NetworkStats';
 import { useNetworkStatsQuery } from '../generated/loopringExplorer';
 import { EXPLORER_CONFIG, EXPLORER_NETWORK } from '../utils/config';
 import { Block, convertTransactionData, getBlock, getLatestBlock, mapLoopringTransactionToGraphStructure } from '../utils/transaction';
-import { range, sortBy } from 'lodash';
+import { range, sortBy, reverse } from 'lodash';
 
 export const getServerSideProps: GetServerSideProps = async () => {
   try {
@@ -45,7 +45,7 @@ const HomeTaiko = () => {
           return getBlock(blockId);
         })
       ).then((blocks) => {
-        const sorted = _.reverse(sortBy(blocks.concat(latestBlock), (block) => block.blockId));
+        const sorted = reverse(sortBy(blocks.concat(latestBlock), (block) => block.blockId));
         
         setState((state) => ({
           ...state,
