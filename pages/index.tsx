@@ -45,7 +45,7 @@ const HomeTaiko = () => {
           return getBlock(blockId);
         })
       ).then((blocks) => {
-        const sorted = sortBy(blocks.concat(latestBlock), (block) => block.blockId).reverse();
+        const sorted = _.reverse(sortBy(blocks.concat(latestBlock), (block) => block.blockId));
         
         setState((state) => ({
           ...state,
@@ -78,13 +78,13 @@ const HomeTaiko = () => {
           averageBlockTime: undefined,
           hashRate: undefined,
           difficulty: undefined,
-          blocks: state.blocks.reverse().map((block) => ({
+          blocks: state.blocks.map((block) => ({
             hash: block.txHash,
             timestamp: Math.floor(block.createdAt / 1000),
             transactionCount: block.transactions.length.toString(),
           })),
           proxy: {
-            blockCount: state.blocks.reverse()[0].blockId - 1,
+            blockCount: state.blocks[0].blockId - 1,
             transactionCount: undefined,
             userCount: undefined,
           },
