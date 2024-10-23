@@ -132,6 +132,7 @@ const Block: React.FC<{}> = () => {
   );
 };
 
+
 const BlockTaiko: React.FC<{}> = () => {
   const router = useRouter();
   const blockId = router.query.id;
