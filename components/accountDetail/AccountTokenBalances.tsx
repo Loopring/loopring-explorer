@@ -262,7 +262,7 @@ const AccountTokenBalancesTaiko = () => {
             token: {
               name: token.name,
               symbol: token.symbol,
-              decimals: 18,
+              decimals: token.decimals,
               __typename: 'Token',
               id: token.tokenId,
               address: token.address,
