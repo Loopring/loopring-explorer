@@ -274,8 +274,10 @@ const AccountTokenBalancesTaiko = () => {
         })
         const totalInUSD = accountBalances.reduce((acc, balance) => {
           const token = tokens.find(t => t.tokenId === balance.tokenId) 
-          const tokenPrice = tokenPrices.find(p => isSameEVMAddress(p.token, token.address)) 
-          return acc.add(new Decimal(tokenPrice.price).mul(utils.formatUnits(balance.total, token.decimals)))
+          const tokenPrice = tokenPrices.find(p => {
+            return isSameEVMAddress(p.token, token.address)
+          }) 
+          return acc.add(new Decimal(tokenPrice?.price ?? '0').mul(utils.formatUnits(balance.total, token.decimals)))
         }, new Decimal('0')).toString()
         setState({
           balances: balances,
