@@ -7,7 +7,7 @@ export const LOOPRING_SUBGRAPH =
   'https://dev.loopring.io/api/v3/forwardRequest';
 export const EXPLORER_URL = 'https://etherscan.io/';
 export const INFURA_ENDPOINT =
-  process.env.NEXT_PUBLIC_INFURA_ENDPOINT ?? 'https://mainneteth.loopring.io';
+  process.env.NEXT_PUBLIC_INFURA_ENDPOINT ?? 'https://api.zan.top/node/v1/eth/mainnet/e98858682c844db2a497a15cc4d3e5a3';
 export const UNISWAP_SUBGRAPH = 'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v2';
 export const apiEndpointByTxType = {
   transfer: 'user/transactions',
