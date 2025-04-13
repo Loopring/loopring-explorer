@@ -38,14 +38,37 @@ const getCollectionName = async (address)=> {
   try {
     const endpoint = `${LOOPRING_API}${loopringApiEndpoints.collection}?collectionAddress=${address}`;
     const res = await fetch(endpoint).then((res) => res.json());
-    return {
-      name: res.name as string, 
-      avatar: res.avatar as string,
-      banner: res.banner as string,
-      nftType: res.nftType as string,
-      description: res.description as string
-    }
+    if (!res.name) throw new Error('Contract has no name function');
+
+    return extractCollectionData(res);
   } catch (error) {
+    return getCollectionMetadataFromFirstToken(address);
+  }
+};
+
+const extractCollectionData = async (res) => {
+  return {
+    name: res.name as string,
+    avatar: res.avatar as string,
+    banner: res.banner as string,
+    nftType: res.nftType as string,
+    description: res.description as string,
+  };
+};
+
+const getCollectionMetadataFromFirstToken = async (address) => {
+  try {
+    const endpoint = `${LOOPRING_API}${loopringApiEndpoints.collectionNFTs}?nftHash=${address}&id=0&limit=1&metadata=true`;
+    const { nftTokenInfos } = await fetch(endpoint).then((res) => res.json());
+    const {
+      metadata: { uri },
+    } = nftTokenInfos?.[0];
+
+    const { collection_metadata } = await fetch(uri).then((res) => res.json());
+    const res = await fetch(collection_metadata).then((res) => res.json());
+
+    return extractCollectionData(res);
+  } catch {
     return {};
   }
 };
